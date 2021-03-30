@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/regel/tinkerbell)](https://goreportcard.com/report/github.com/regel/tinkerbell)
-![ci](https://github.com/regel/tinkerbell/workflows/ci/badge.svg)
+[![Build](https://github.com/regel/tinkerbell/actions/workflows/build.yaml/badge.svg)](https://github.com/regel/tinkerbell/actions/workflows/build.yaml)
 
 `tb` (tinkerbell) is the the tool for downloading Yahoo! finance market data.
 
