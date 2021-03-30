@@ -48,13 +48,6 @@ type Configuration struct {
 	Debug       bool          `mapstructure:"debug"`
 }
 
-func FileExists(file string) bool {
-	if _, err := os.Stat(file); err != nil {
-		return false
-	}
-	return true
-}
-
 func PrintDelimiterLineToWriter(w io.Writer, delimiterChar string) {
 	delim := make([]string, 120)
 	for i := 0; i < 120; i++ {
@@ -136,19 +129,4 @@ func printCfg(cfg *Configuration) {
 	}
 
 	PrintDelimiterLineToWriter(os.Stderr, "-")
-}
-
-func findConfigFile(fileName string) (string, error) {
-	if dir, ok := os.LookupEnv("TB_CONFIG_DIR"); ok {
-		return filepath.Join(dir, fileName), nil
-	}
-
-	for _, location := range configSearchLocations {
-		filePath := filepath.Join(location, fileName)
-		if FileExists(filePath) {
-			return filePath, nil
-		}
-	}
-
-	return "", errors.New(fmt.Sprintf("Config file not found: %s", fileName))
 }
