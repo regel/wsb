@@ -19,6 +19,7 @@ temp/
 
 # Misc
 tb
+tinkerbell
 /config.yaml
 /configmap.yaml
 __pycache__
