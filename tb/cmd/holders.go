@@ -85,13 +85,13 @@ func holders(cmd *cobra.Command, args []string) error {
 				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
 				return
 			}
-			wg.Done()
 			hd := &holdersData{
 				breakdown:            breakdown,
 				institutionalHolders: institutionalHolders,
 				fundHolders:          fundHolders,
 			}
 			holdersChan <- hd
+			wg.Done()
 		}(ticker)
 	}
 	go func() {

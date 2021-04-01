@@ -113,12 +113,12 @@ func ohlc(cmd *cobra.Command, args []string) error {
 				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
 				return
 			}
-			wg.Done()
 			data := &ohlcData{
 				Ohlc:   points,
 				Ticker: t,
 			}
 			ohlcChan <- data
+			wg.Done()
 		}(ticker, interval, startTime, endTime)
 	}
 	go func() {
