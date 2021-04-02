@@ -56,8 +56,7 @@ const sampleTables = `
 
 func TestHtmlResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var rsp string
-		rsp = sampleHtmlResponse
+		rsp := sampleHtmlResponse
 		w.Header()["Content-Type"] = []string{"text/html"}
 		fmt.Fprintln(w, rsp)
 	}))
@@ -78,8 +77,7 @@ func TestHtmlResponse(t *testing.T) {
 
 func TestNoTable(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var rsp string
-		rsp = sampleHtmlNoTable
+		rsp := sampleHtmlNoTable
 		w.Header()["Content-Type"] = []string{"text/html"}
 		fmt.Fprintln(w, rsp)
 	}))
@@ -99,8 +97,7 @@ func TestNoTable(t *testing.T) {
 
 func TestEmptyTable(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var rsp string
-		rsp = sampleHtmlEmptyTable
+		rsp := sampleHtmlEmptyTable
 		w.Header()["Content-Type"] = []string{"text/html"}
 		fmt.Fprintln(w, rsp)
 	}))
@@ -120,8 +117,7 @@ func TestEmptyTable(t *testing.T) {
 
 func TestTables(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var rsp string
-		rsp = sampleTables
+		rsp := sampleTables
 		w.Header()["Content-Type"] = []string{"text/html"}
 		fmt.Fprintln(w, rsp)
 	}))
