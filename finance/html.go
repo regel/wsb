@@ -48,7 +48,8 @@ func ReadHtml(c context.Context, client *http.Client, url string) ([]*Table, err
 	z := html.NewTokenizer(res.Body)
 	tables := make([]*Table, 0)
 	var table *Table
-	var tag string
+	var openTag string
+	var raw string
 	var row int
 	for {
 		tt := z.Next()
@@ -56,14 +57,22 @@ func ReadHtml(c context.Context, client *http.Client, url string) ([]*Table, err
 		case html.ErrorToken:
 			return tables, z.Err()
 		case html.TextToken:
-			if strings.EqualFold(tag, "td") {
-				//emitBytes(z.Text())
-				col := string(z.Text())
-				table.Rows[row] = append(table.Rows[row], col)
+			if openTag != "" {
+				raw = raw + string(z.Text())
 			}
 		case html.StartTagToken, html.EndTagToken:
 			tn, _ := z.TagName()
-			tag = string(tn)
+			tag := string(tn)
+			if strings.EqualFold(tag, "td") || strings.EqualFold(tag, "th") {
+				if tt == html.StartTagToken {
+					openTag = tag
+					raw = ""
+				} else {
+					openTag = ""
+					trimmed := strings.Trim(raw, " \n")
+					table.Rows[row] = append(table.Rows[row], trimmed)
+				}
+			}
 			if tt == html.EndTagToken && strings.EqualFold(tag, "table") {
 				tables = append(tables, table)
 			}
