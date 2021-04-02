@@ -27,11 +27,10 @@ import (
 	"time"
 )
 
-const (
-	holdersUrl = "https://finance.yahoo.com/quote/%s/holders"
-)
-
 type Handler struct {
+	yahooFinanceUrl      string
+	yahooFinanceQueryUrl string
+
 	client  *http.Client
 	limiter *rate.Limiter
 }
@@ -81,9 +80,12 @@ func NewHandler(config config.Configuration) (*Handler, error) {
 	}
 	// usage is capped at 2,000 requests/hour
 	limiter := rate.NewLimiter(rate.Every(time.Hour/2000), config.Bursts)
+
 	h := &Handler{
-		client:  cli,
-		limiter: limiter,
+		yahooFinanceUrl:      config.YahooFinanceUrl,
+		yahooFinanceQueryUrl: config.YahooFinanceQueryUrl,
+		client:               cli,
+		limiter:              limiter,
 	}
 	return h, nil
 }
@@ -93,7 +95,8 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	tables, err := ReadHtml(c, h.client, fmt.Sprintf(holdersUrl, ticker))
+	holdersUrl := h.yahooFinanceUrl + fmt.Sprintf("/quote/%s/holders", ticker)
+	tables, err := ReadHtml(c, h.client, holdersUrl)
 	if err != io.EOF {
 		return nil, nil, nil, err
 	}
@@ -159,6 +162,6 @@ func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, sta
 	if err != nil {
 		return nil, err
 	}
-	points, err := ReadOhlc(c, h.client, ticker, interval, startTime, endTime)
+	points, err := ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, startTime, endTime)
 	return points, err
 }

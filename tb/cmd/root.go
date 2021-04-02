@@ -24,6 +24,11 @@ import (
 	"github.com/spf13/pflag"
 )
 
+const (
+	defaultYahooBaseUrl  = "https://finance.yahoo.com"
+	defaultYahooQueryUrl = "https://query2.finance.yahoo.com"
+)
+
 var (
 	cfgFile string
 )
@@ -58,6 +63,10 @@ func Execute() {
 
 func addCommonFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&cfgFile, "config", "", "Config file")
+	flags.String("yahoo-finance-url", defaultYahooBaseUrl, heredoc.Doc(`
+		Yahoo Finance Base Url`))
+	flags.String("yahoo-finance-query-url", defaultYahooQueryUrl, heredoc.Doc(`
+		Yahoo Finance Query Url`))
 	flags.StringSlice("tickers", []string{}, heredoc.Doc(`
 		Names of selected tickers`))
 	flags.Bool("print-config", false, heredoc.Doc(`

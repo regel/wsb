@@ -26,10 +26,6 @@ import (
 	"time"
 )
 
-const (
-	yahooFinanceBaseUrl = "https://query2.finance.yahoo.com"
-)
-
 func getSupportedRanges() []string {
 	return []string{
 		"1d",
@@ -90,8 +86,8 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func getUrl(ticker string, interval string, startTime time.Time, endTime time.Time) string {
-	baseUrl, err := url.Parse(yahooFinanceBaseUrl)
+func getUrl(baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) string {
+	base, err := url.Parse(baseUrl)
 	if err != nil {
 		panic("Can't parse Yahoo Finance base url")
 	}
@@ -107,14 +103,14 @@ func getUrl(ticker string, interval string, startTime time.Time, endTime time.Ti
 		RawQuery: values.Encode(),
 	}
 
-	return baseUrl.ResolveReference(relative).String()
+	return base.ResolveReference(relative).String()
 }
 
-func ReadOhlc(c context.Context, client *http.Client, ticker string, interval string, startTime time.Time, endTime time.Time) ([]Ohlc, error) {
+func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) ([]Ohlc, error) {
 	if !contains(getSupportedRanges(), interval) {
 		return nil, errors.New("Invalid interval")
 	}
-	queryUrl := getUrl(ticker, interval, startTime, endTime)
+	queryUrl := getUrl(baseUrl, ticker, interval, startTime, endTime)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)

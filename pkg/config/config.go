@@ -42,10 +42,12 @@ var (
 )
 
 type Configuration struct {
-	DialTimeout time.Duration `mapstructure:"dial-timeout"`
-	Bursts      int           `mapstructure:"bursts"`
-	Tickers     []string      `mapstructure:"tickers"`
-	Debug       bool          `mapstructure:"debug"`
+	YahooFinanceUrl      string        `mapstructure:"yahoo-finance-url"`
+	YahooFinanceQueryUrl string        `mapstructure:"yahoo-finance-query-url"`
+	DialTimeout          time.Duration `mapstructure:"dial-timeout"`
+	Bursts               int           `mapstructure:"bursts"`
+	Tickers              []string      `mapstructure:"tickers"`
+	Debug                bool          `mapstructure:"debug"`
 }
 
 func PrintDelimiterLineToWriter(w io.Writer, delimiterChar string) {
