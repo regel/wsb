@@ -44,10 +44,11 @@ type HoldersBreakdown struct {
 }
 
 type HoldersRow struct {
-	Holder string
-	Shares int64
-	PctOut float64
-	Value  int64
+	Holder       string
+	Shares       int64
+	DateReported time.Time
+	PctOut       float64
+	Value        int64
 }
 
 // Top Institutional Holders
@@ -124,14 +125,16 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 		}
 		holder := row[0]
 		shares, _ := trimInt(row[1])
-		pctOut, _ := trimPct(row[2])
-		value, _ := trimInt(row[3])
+		reported, _ := time.Parse("Jan 2, 2006", row[2])
+		pctOut, _ := trimPct(row[3])
+		value, _ := trimInt(row[4])
 		institutionalHolders.Rows = append(institutionalHolders.Rows,
 			HoldersRow{
-				Holder: holder,
-				Shares: shares,
-				PctOut: pctOut,
-				Value:  value,
+				Holder:       holder,
+				Shares:       shares,
+				DateReported: reported,
+				PctOut:       pctOut,
+				Value:        value,
 			})
 	}
 	fundHolders := &HoldersTable{
@@ -144,14 +147,16 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 		}
 		holder := row[0]
 		shares, _ := trimInt(row[1])
-		pctOut, _ := trimPct(row[2])
-		value, _ := trimInt(row[3])
+		reported, _ := time.Parse("Jan 2, 2006", row[2])
+		pctOut, _ := trimPct(row[3])
+		value, _ := trimInt(row[4])
 		fundHolders.Rows = append(fundHolders.Rows,
 			HoldersRow{
-				Holder: holder,
-				Shares: shares,
-				PctOut: pctOut,
-				Value:  value,
+				Holder:       holder,
+				Shares:       shares,
+				DateReported: reported,
+				PctOut:       pctOut,
+				Value:        value,
 			})
 	}
 	return breakdown, institutionalHolders, fundHolders, nil
