@@ -40,6 +40,8 @@ See documentation for individual commands:
 
 * [tb](doc/tb.md)
 * [tb version](doc/tb_version.md)
+* [tb ohlc](doc/tb_ohlc.md)
+* [tb hold](doc/tb_hold.md)
 
 ## Configuration
 
