@@ -21,11 +21,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 )
 
 const (
-	ohlcUrl = "https://query2.finance.yahoo.com/v8/finance/chart/%s?interval=%s&period1=%d&period2=%d&region=US&corsDomain=com.finance.yahoo"
+	yahooFinanceBaseUrl = "https://query2.finance.yahoo.com"
 )
 
 func getSupportedRanges() []string {
@@ -88,11 +90,31 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+func getUrl(ticker string, interval string, startTime time.Time, endTime time.Time) string {
+	baseUrl, err := url.Parse(yahooFinanceBaseUrl)
+	if err != nil {
+		panic("Can't parse Yahoo Finance base url")
+	}
+	values := url.Values{
+		"interval":   []string{interval},
+		"period1":    []string{strconv.FormatInt(startTime.Unix(), 10)},
+		"period2":    []string{strconv.FormatInt(endTime.Unix(), 10)},
+		"region":     []string{"US"},
+		"corsDomain": []string{"com.finance.yahoo"},
+	}
+	relative := &url.URL{
+		Path:     "/v8/finance/chart/" + ticker,
+		RawQuery: values.Encode(),
+	}
+
+	return baseUrl.ResolveReference(relative).String()
+}
+
 func ReadOhlc(c context.Context, client *http.Client, ticker string, interval string, startTime time.Time, endTime time.Time) ([]Ohlc, error) {
 	if !contains(getSupportedRanges(), interval) {
 		return nil, errors.New("Invalid interval")
 	}
-	queryUrl := fmt.Sprintf(ohlcUrl, ticker, interval, startTime.Unix(), endTime.Unix())
+	queryUrl := getUrl(ticker, interval, startTime, endTime)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)
