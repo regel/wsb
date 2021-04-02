@@ -125,6 +125,7 @@ func PrintHolders(holdersChan chan *holdersData) {
 		institutionalTable.SetHeader([]string{
 			"Holder",
 			"Shares",
+			"Date Reported",
 			"% Out",
 			"Value",
 		})
@@ -132,6 +133,7 @@ func PrintHolders(holdersChan chan *holdersData) {
 			institutionalTable.Append([]string{
 				row.Holder,
 				fmt.Sprintf("%d", row.Shares),
+				row.DateReported.Format("2006-01-02"),
 				fmt.Sprintf("%.02f", row.PctOut),
 				fmt.Sprintf("%d", row.Value),
 			})
@@ -143,6 +145,7 @@ func PrintHolders(holdersChan chan *holdersData) {
 		fundTable.SetHeader([]string{
 			"Holder",
 			"Shares",
+			"Date Reported",
 			"% Out",
 			"Value",
 		})
@@ -150,6 +153,7 @@ func PrintHolders(holdersChan chan *holdersData) {
 			fundTable.Append([]string{
 				row.Holder,
 				fmt.Sprintf("%d", row.Shares),
+				row.DateReported.Format("2006-01-02"),
 				fmt.Sprintf("%.02f", row.PctOut),
 				fmt.Sprintf("%d", row.Value),
 			})
