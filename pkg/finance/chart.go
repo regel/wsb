@@ -16,13 +16,10 @@ package finance
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
+	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/tinkerbell/pkg/finance/yahoo"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -42,41 +39,6 @@ func getSupportedRanges() []string {
 	}
 }
 
-type Ohlc struct {
-	Ticker    string
-	Timestamp time.Time
-	Open      float64
-	High      float64
-	Low       float64
-	Close     float64
-	Volume    int64
-}
-
-type Response struct {
-	Chart Chart `json:"chart"`
-}
-
-type Chart struct {
-	Result []Result `json:"result"`
-}
-
-type Result struct {
-	Timestamps []int64   `json:"timestamp"`
-	Indicators Indicator `json:"indicators"`
-}
-
-type Indicator struct {
-	Quote []Quote `json:"quote"`
-}
-
-type Quote struct {
-	Volume []int64   `json:"volume"`
-	Open   []float64 `json:"open"`
-	High   []float64 `json:"high"`
-	Low    []float64 `json:"low"`
-	Close  []float64 `json:"close"`
-}
-
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -86,65 +48,9 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func getUrl(baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) string {
-	base, err := url.Parse(baseUrl)
-	if err != nil {
-		panic("Can't parse Yahoo Finance base url")
-	}
-	values := url.Values{
-		"interval":   []string{interval},
-		"period1":    []string{strconv.FormatInt(startTime.Unix(), 10)},
-		"period2":    []string{strconv.FormatInt(endTime.Unix(), 10)},
-		"region":     []string{"US"},
-		"corsDomain": []string{"com.finance.yahoo"},
-	}
-	relative := &url.URL{
-		Path:     "/v8/finance/chart/" + ticker,
-		RawQuery: values.Encode(),
-	}
-
-	return base.ResolveReference(relative).String()
-}
-
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) ([]Ohlc, error) {
+func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) ([]types.Ohlc, error) {
 	if !contains(getSupportedRanges(), interval) {
 		return nil, errors.New("Invalid interval")
 	}
-	queryUrl := getUrl(baseUrl, ticker, interval, startTime, endTime)
-	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, cancel := context.WithTimeout(c, time.Duration(5*time.Second))
-	defer cancel()
-	req = req.WithContext(ctx)
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Non-OK HTTP status: %d", res.StatusCode)
-	}
-
-	response := &Response{}
-	err = json.NewDecoder(res.Body).Decode(response)
-	if err != nil {
-		return nil, err
-	}
-	points := make([]Ohlc, 0)
-	quote := response.Chart.Result[0].Indicators.Quote[0]
-	for j, timestamp := range response.Chart.Result[0].Timestamps {
-		ohlc := Ohlc{
-			Ticker:    ticker,
-			Timestamp: time.Unix(timestamp, 0),
-			Volume:    quote.Volume[j],
-			Open:      quote.Open[j],
-			High:      quote.High[j],
-			Low:       quote.Low[j],
-			Close:     quote.Close[j],
-		}
-		points = append(points, ohlc)
-	}
-	return points, err
+	return yahoo.ReadOhlc(c, client, baseUrl, ticker, interval, startTime, endTime)
 }

@@ -12,51 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package finance
+package yahoo
 
 import (
 	"context"
 	"fmt"
-	"github.com/regel/tinkerbell/pkg/config"
-	"golang.org/x/time/rate"
+	"github.com/regel/tinkerbell/pkg/common"
+	"github.com/regel/tinkerbell/pkg/finance/types"
 	"io"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
-
-type Handler struct {
-	yahooFinanceUrl      string
-	yahooFinanceQueryUrl string
-
-	client  *http.Client
-	limiter *rate.Limiter
-}
-
-type HoldersBreakdown struct {
-	Ticker                            string
-	PctSharesHeldbyAllInsider         float64
-	PctSharesHeldbyInstitutions       float64
-	PctFloatHeldbyInstitutions        float64
-	NumberofInstitutionsHoldingShares int64
-}
-
-type HoldersRow struct {
-	Holder       string
-	Shares       int64
-	DateReported time.Time
-	PctOut       float64
-	Value        int64
-}
-
-// Top Institutional Holders
-// Top Mutual Fund Holders
-type HoldersTable struct {
-	Ticker string
-	Rows   []HoldersRow
-}
 
 func trimPct(s string) (float64, error) {
 	s2 := strings.TrimRight(s, "%")
@@ -68,36 +36,9 @@ func trimInt(s string) (int64, error) {
 	return strconv.ParseInt(s2, 10, 64)
 }
 
-// NewHandler creates a handler
-func NewHandler(config config.Configuration) (*Handler, error) {
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
-	}
-	var cli = &http.Client{
-		Transport: netTransport,
-	}
-	// usage is capped at 2,000 requests/hour
-	limiter := rate.NewLimiter(rate.Every(time.Hour/2000), config.Bursts)
-
-	h := &Handler{
-		yahooFinanceUrl:      config.YahooFinanceUrl,
-		yahooFinanceQueryUrl: config.YahooFinanceQueryUrl,
-		client:               cli,
-		limiter:              limiter,
-	}
-	return h, nil
-}
-
-func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdown, *HoldersTable, *HoldersTable, error) {
-	err := h.limiter.Wait(c)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	holdersUrl := h.yahooFinanceUrl + fmt.Sprintf("/quote/%s/holders", ticker)
-	tables, err := ReadHtml(c, h.client, holdersUrl)
+func GetHolders(c context.Context, client *http.Client, baseUrl string, ticker string) (*types.HoldersBreakdown, *types.HoldersTable, *types.HoldersTable, error) {
+	holdersUrl := baseUrl + fmt.Sprintf("/quote/%s/holders", ticker)
+	tables, err := common.ReadHtml(c, client, holdersUrl)
 	if err != io.EOF {
 		return nil, nil, nil, err
 	}
@@ -107,7 +48,7 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 	pctFloatHeldbyInstitutions, _ := trimPct(tables[0].Rows[2][0])
 	numberofInstitutionsHoldingShares, _ := trimInt(tables[0].Rows[3][0])
 
-	breakdown := &HoldersBreakdown{
+	breakdown := &types.HoldersBreakdown{
 		Ticker:                            ticker,
 		PctSharesHeldbyAllInsider:         pctSharesHeldbyAllInsider,
 		PctSharesHeldbyInstitutions:       pctSharesHeldbyInstitutions,
@@ -115,9 +56,9 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 		NumberofInstitutionsHoldingShares: numberofInstitutionsHoldingShares,
 	}
 
-	institutionalHolders := &HoldersTable{
+	institutionalHolders := &types.HoldersTable{
 		Ticker: ticker,
-		Rows:   make([]HoldersRow, 0),
+		Rows:   make([]types.HoldersRow, 0),
 	}
 	for j, row := range tables[1].Rows {
 		if j == 0 {
@@ -129,7 +70,7 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 		pctOut, _ := trimPct(row[3])
 		value, _ := trimInt(row[4])
 		institutionalHolders.Rows = append(institutionalHolders.Rows,
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       holder,
 				Shares:       shares,
 				DateReported: reported,
@@ -137,9 +78,9 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 				Value:        value,
 			})
 	}
-	fundHolders := &HoldersTable{
+	fundHolders := &types.HoldersTable{
 		Ticker: ticker,
-		Rows:   make([]HoldersRow, 0),
+		Rows:   make([]types.HoldersRow, 0),
 	}
 	for j, row := range tables[2].Rows {
 		if j == 0 {
@@ -151,7 +92,7 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 		pctOut, _ := trimPct(row[3])
 		value, _ := trimInt(row[4])
 		fundHolders.Rows = append(fundHolders.Rows,
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       holder,
 				Shares:       shares,
 				DateReported: reported,
@@ -160,13 +101,4 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*HoldersBreakdow
 			})
 	}
 	return breakdown, institutionalHolders, fundHolders, nil
-}
-
-func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, startTime time.Time, endTime time.Time) ([]Ohlc, error) {
-	err := h.limiter.Wait(c)
-	if err != nil {
-		return nil, err
-	}
-	points, err := ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, startTime, endTime)
-	return points, err
 }

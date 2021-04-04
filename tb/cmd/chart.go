@@ -24,6 +24,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/regel/tinkerbell/pkg/config"
 	"github.com/regel/tinkerbell/pkg/finance"
+	"github.com/regel/tinkerbell/pkg/finance/types"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 	"time"
@@ -34,7 +35,7 @@ const (
 )
 
 type chartData struct {
-	Ohlc   []finance.Ohlc
+	Ohlc   []types.Ohlc
 	Ticker string
 }
 

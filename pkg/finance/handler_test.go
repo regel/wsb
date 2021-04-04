@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/regel/tinkerbell/pkg/config"
+	"github.com/regel/tinkerbell/pkg/finance/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -393,7 +394,7 @@ func strftime(s string) time.Time {
 	return tm
 }
 
-func TestHoldersResponse(t *testing.T) {
+func TestYahooHoldersResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 		if r.URL.Path == "/quote/GME/holders" {
@@ -430,74 +431,74 @@ func TestHoldersResponse(t *testing.T) {
 	require.InDelta(t, 142.38, brk.PctFloatHeldbyInstitutions, 0.01, "% of Float Held by Institutions must be the same")
 	require.EqualValues(t, 296, brk.NumberofInstitutionsHoldingShares, "Number of Institutions Holding Shares must be the same")
 
-	var expected *HoldersTable
-	expected = &HoldersTable{
+	var expected *types.HoldersTable
+	expected = &types.HoldersTable{
 		Ticker: "GME",
-		Rows: []HoldersRow{
-			HoldersRow{
+		Rows: []types.HoldersRow{
+			types.HoldersRow{
 				Holder:       "FMR, LLC",
 				Shares:       9276087,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       13.26,
 				Value:        174761479,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Blackrock Inc.",
 				Shares:       9217335,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       13.18,
 				Value:        173654591,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Vanguard Group, Inc. (The)",
 				Shares:       5162095,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       7.38,
 				Value:        97253869,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Senvest Management LLC",
 				Shares:       5050915,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       7.22,
 				Value:        95159238,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Maverick Capital Ltd.",
 				Shares:       4658607,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       6.66,
 				Value:        87768155,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Morgan Stanley",
 				Shares:       4275838,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       6.11,
 				Value:        80556787,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Dimensional Fund Advisors LP",
 				Shares:       3934919,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       5.63,
 				Value:        74133873,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Shaw D.E. & Co., Inc.",
 				Shares:       2841563,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       4.06,
 				Value:        53535046,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Susquehanna International Group, LLP",
 				Shares:       2487366,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       3.56,
 				Value:        46861975,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "State Street Corporation",
 				Shares:       2445216,
 				DateReported: strftime("2020-12-30"),
@@ -508,73 +509,73 @@ func TestHoldersResponse(t *testing.T) {
 	}
 	require.EqualValues(t, expected, it, "Institutional Holders must be the same")
 
-	expected = &HoldersTable{
+	expected = &types.HoldersTable{
 		Ticker: "GME",
-		Rows: []HoldersRow{
-			HoldersRow{
+		Rows: []types.HoldersRow{
+			types.HoldersRow{
 				Holder:       "iShares Core S&P Smallcap ETF",
 				Shares:       3665529,
 				DateReported: strftime("2021-02-27"),
 				PctOut:       5.24,
 				Value:        372930920,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Vanguard Total Stock Market Index Fund",
 				Shares:       1468071,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       2.1,
 				Value:        27658457,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Morgan Stanley Inst Fund Inc-Inception Port",
 				Shares:       1415967,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       2.02,
 				Value:        26676818,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "iShares Russell 2000 ETF",
 				Shares:       1395217,
 				DateReported: strftime("2021-02-27"),
 				PctOut:       1.99,
 				Value:        141949377,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Vanguard Extended Market Index Fund",
 				Shares:       817583,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       1.17,
 				Value:        15403263,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Vanguard Small-Cap Index Fund",
 				Shares:       633843,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       0.91,
 				Value:        11941602,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "iShares Russell 2000 Value ETF",
 				Shares:       612531,
 				DateReported: strftime("2021-02-27"),
 				PctOut:       0.88,
 				Value:        62318903,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "EQ Advisors Trust-EQ/Morgan Stanley Small Cap Growth Port",
 				Shares:       602280,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       0.86,
 				Value:        11346955,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "Vanguard Strategic Equity Fund",
 				Shares:       571438,
 				DateReported: strftime("2020-12-30"),
 				PctOut:       0.82,
 				Value:        10765891,
 			},
-			HoldersRow{
+			types.HoldersRow{
 				Holder:       "SPDR (R) Ser Tr-SPDR (R) S&P (R) Retail ETF",
 				Shares:       523000,
 				DateReported: strftime("2021-02-27"),
@@ -586,7 +587,7 @@ func TestHoldersResponse(t *testing.T) {
 	require.EqualValues(t, expected, ft, "Fund Holders must be the same")
 }
 
-func TestChartResponse(t *testing.T) {
+func TestYahooChartResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 		if r.URL.Path == "/v8/finance/chart/AAPL" {
@@ -612,7 +613,7 @@ func TestChartResponse(t *testing.T) {
 	n, err := NewHandler(*configuration)
 	require.NoError(t, err)
 
-	expected := Ohlc{
+	expected := types.Ohlc{
 		Ticker:    "AAPL",
 		Timestamp: time.Unix(1617348113, 0),
 		Open:      123.66000366210938,
@@ -636,7 +637,7 @@ func TestChartResponse(t *testing.T) {
 	require.InDelta(t, expected.Close, out[0].Close, 0.01, "Close must be the same")
 }
 
-func TestChartNoContent(t *testing.T) {
+func TestYahooChartNoContent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 		if r.URL.Path == "/v8/finance/chart/AAPL" {
