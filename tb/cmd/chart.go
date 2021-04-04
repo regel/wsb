@@ -33,14 +33,14 @@ const (
 	dateFormat = "2006-01-02"
 )
 
-type ohlcData struct {
+type chartData struct {
 	Ohlc   []finance.Ohlc
 	Ticker string
 }
 
 func newOhlcCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ohlc",
+		Use:   "chart",
 		Short: "Prints tables of price history to the current shell",
 		Long: heredoc.Doc(`
 			Query Yahoo finance Ohlc data points for selected tickers.
@@ -48,7 +48,7 @@ func newOhlcCmd() *cobra.Command {
 			* Prices: Open, High, Low, Close
 			* Volume
 			`),
-		RunE: ohlc,
+		RunE: chart,
 	}
 
 	flags := cmd.Flags()
@@ -66,7 +66,7 @@ End time of Ohlc time range. Format: 2006-01-02`))
                 Time interval range. Supported values: (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)`))
 }
 
-func ohlc(cmd *cobra.Command, args []string) error {
+func chart(cmd *cobra.Command, args []string) error {
 	var wg sync.WaitGroup
 	printConfig, err := cmd.Flags().GetBool("print-config")
 	if err != nil {
@@ -103,7 +103,7 @@ func ohlc(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	ohlcChan := make(chan *ohlcData)
+	chartChan := make(chan *chartData)
 	for _, ticker := range configuration.Tickers {
 		wg.Add(1)
 		go func(t string, window string, start time.Time, end time.Time) {
@@ -113,25 +113,25 @@ func ohlc(cmd *cobra.Command, args []string) error {
 				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
 				return
 			}
-			data := &ohlcData{
+			data := &chartData{
 				Ohlc:   points,
 				Ticker: t,
 			}
-			ohlcChan <- data
+			chartChan <- data
 			wg.Done()
 		}(ticker, interval, startTime, endTime)
 	}
 	go func() {
 		wg.Wait()
-		close(ohlcChan)
+		close(chartChan)
 	}()
 
-	PrintOhlc(ohlcChan)
+	PrintOhlc(chartChan)
 	return nil
 }
 
-func PrintOhlc(ohlcChan chan *ohlcData) {
-	for data := range ohlcChan {
+func PrintOhlc(chartChan chan *chartData) {
+	for data := range chartChan {
 		history := tablewriter.NewWriter(os.Stdout)
 		history.SetHeader([]string{
 			"Date",
