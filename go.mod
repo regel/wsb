@@ -2,7 +2,9 @@ module github.com/regel/tinkerbell
 
 go 1.15
 
-replace github.com/regel/tinkerbell/finance => ./finance
+replace github.com/regel/tinkerbell/pkg/finance => ./pkg/finance
+
+replace github.com/regel/tinkerbell/pkg/config => ./pkg/config
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
