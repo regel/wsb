@@ -34,11 +34,6 @@ const (
 	dateFormat = "2006-01-02"
 )
 
-type chartData struct {
-	Ohlc   []types.Ohlc
-	Ticker string
-}
-
 func newOhlcCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "chart",
@@ -106,24 +101,8 @@ func chart(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	chartChan := make(chan *chartData)
-	for _, ticker := range configuration.Tickers {
-		wg.Add(1)
-		go func(t string, window string, from time.Time, to time.Time) {
-			points, err := handler.GetOhlc(context, t, window, from, to)
-			if err != nil {
-				wg.Done()
-				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
-				return
-			}
-			data := &chartData{
-				Ohlc:   points,
-				Ticker: t,
-			}
-			chartChan <- data
-			wg.Done()
-		}(ticker, interval, from, to)
-	}
+	chartChan := make(chan *types.Chart)
+	handler.GetOhlcBatch(context, &wg, chartChan, configuration.Tickers, interval, from, to)
 	go func() {
 		wg.Wait()
 		close(chartChan)
@@ -133,7 +112,7 @@ func chart(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func PrintOhlc(chartChan chan *chartData) {
+func PrintOhlc(chartChan chan *types.Chart) {
 	for data := range chartChan {
 		history := tablewriter.NewWriter(os.Stdout)
 		history.SetHeader([]string{

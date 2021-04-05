@@ -14,6 +14,11 @@ type Ohlc struct {
 	Volume    int64
 }
 
+type Chart struct {
+	Ohlc   []Ohlc
+	Ticker string
+}
+
 type HoldersBreakdown struct {
 	Ticker                            string
 	PctSharesHeldbyAllInsider         float64

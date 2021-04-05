@@ -71,7 +71,7 @@ func getUrl(baseUrl string, ticker string, interval string, from time.Time, to t
 	return base.ResolveReference(relative).String()
 }
 
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+func GetOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
 	queryUrl := getUrl(baseUrl, ticker, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {

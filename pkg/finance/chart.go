@@ -48,9 +48,9 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+func GetOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
 	if !contains(getSupportedRanges(), interval) {
 		return nil, errors.New("Invalid interval")
 	}
-	return yahoo.ReadOhlc(c, client, baseUrl, ticker, interval, from, to)
+	return yahoo.GetOhlc(c, client, baseUrl, ticker, interval, from, to)
 }

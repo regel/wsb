@@ -16,6 +16,7 @@ package finance
 
 import (
 	"context"
+	"fmt"
 	"github.com/regel/tinkerbell/pkg/config"
 	"github.com/regel/tinkerbell/pkg/finance/iex"
 	"github.com/regel/tinkerbell/pkg/finance/types"
@@ -23,6 +24,7 @@ import (
 	"golang.org/x/time/rate"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -79,9 +81,33 @@ func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, fro
 		return nil, err
 	}
 	if h.iexCloudSecretToken != "" {
-		points, err = iex.ReadOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, from, to)
+		points, err = iex.GetOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, from, to)
 	} else {
-		points, err = yahoo.ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, from, to)
+		points, err = yahoo.GetOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, from, to)
 	}
 	return points, err
+}
+
+func (h *Handler) GetOhlcBatch(c context.Context, wg *sync.WaitGroup, chartChan chan *types.Chart, tickers []string, interval string, from time.Time, to time.Time) {
+	if h.iexCloudSecretToken != "" {
+		iex.GetOhlcBatch(wg, chartChan, c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, tickers, interval, from, to)
+		return
+	}
+	for _, ticker := range tickers {
+		wg.Add(1)
+		go func(t string, window string, from time.Time, to time.Time) {
+			points, err := h.GetOhlc(c, t, window, from, to)
+			if err != nil {
+				wg.Done()
+				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
+				return
+			}
+			chart := &types.Chart{
+				Ohlc:   points,
+				Ticker: t,
+			}
+			chartChan <- chart
+			wg.Done()
+		}(ticker, interval, from, to)
+	}
 }

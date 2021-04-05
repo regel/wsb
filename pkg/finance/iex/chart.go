@@ -23,7 +23,13 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"strings"
+	"sync"
 	"time"
+)
+
+const (
+	batchMaxLen = 100
 )
 
 type Response struct {
@@ -32,12 +38,33 @@ type Response struct {
 
 type Chart struct {
 	Date    string  `json:"date"`
+	Minute  string  `json:"minute,omitempty"`
 	Updated int64   `json:"updated"`
 	Volume  int64   `json:"volume"`
 	Open    float64 `json:"open"`
 	High    float64 `json:"high"`
 	Low     float64 `json:"low"`
 	Close   float64 `json:"close"`
+}
+
+func chunkSlice(slice []string, chunkSize int) [][]string {
+	var chunks [][]string
+	for {
+		if len(slice) == 0 {
+			break
+		}
+
+		// necessary check to avoid slicing beyond
+		// slice capacity
+		if len(slice) < chunkSize {
+			chunkSize = len(slice)
+		}
+
+		chunks = append(chunks, slice[0:chunkSize])
+		slice = slice[chunkSize:]
+	}
+
+	return chunks
 }
 
 func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
@@ -66,7 +93,60 @@ func getUrl(baseUrl string, token string, ticker string, interval string, from t
 	return base.ResolveReference(relative).String()
 }
 
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+func getBatchUrl(baseUrl string, token string, tickers []string, interval string, from time.Time, to time.Time) string {
+	base, err := url.Parse(baseUrl)
+	if err != nil {
+		panic("Can't parse IEX Cloud base url")
+	}
+
+	max := int(math.Ceil(time.Since(from).Hours() / 24))
+	if max < 5 {
+		max = 5
+	}
+	rangeValue := fmt.Sprintf("%dd", max)
+	values := url.Values{
+		"token":   []string{token},
+		"symbols": []string{strings.Join(tickers, ",")},
+		"range":   []string{rangeValue},
+		"types":   []string{"chart"},
+	}
+	relative := &url.URL{
+		Path:     "/v1/stock/market/batch",
+		RawQuery: values.Encode(),
+	}
+
+	return base.ResolveReference(relative).String()
+}
+
+func decodeChart(chart []Chart, ticker string, from time.Time, to time.Time) []types.Ohlc {
+	points := make([]types.Ohlc, 0)
+	for _, quote := range chart {
+		timestamp, _ := time.Parse("2006-01-02", quote.Date)
+		if quote.Minute != "" {
+			var h, m int
+			n, err := fmt.Sscanf(quote.Minute, "%d:%d", &h, &m)
+			if err == nil && n == 2 {
+				timestamp = timestamp.Add(time.Hour*time.Duration(h) +
+					time.Minute*time.Duration(m))
+			}
+		}
+		if timeWithinRange(timestamp, from, to) {
+			point := types.Ohlc{
+				Ticker:    ticker,
+				Timestamp: timestamp,
+				Volume:    quote.Volume,
+				Open:      quote.Open,
+				High:      quote.High,
+				Low:       quote.Low,
+				Close:     quote.Close,
+			}
+			points = append(points, point)
+		}
+	}
+	return points
+}
+
+func GetOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
 	queryUrl := getUrl(baseUrl, token, ticker, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
@@ -89,22 +169,48 @@ func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token stri
 	if err != nil {
 		return nil, err
 	}
-	points := make([]types.Ohlc, 0)
 	chart := response[ticker].Chart
-	for _, quote := range chart {
-		timestamp, _ := time.Parse("2006-01-02", quote.Date)
-		if timeWithinRange(timestamp, from, to) {
-			point := types.Ohlc{
-				Ticker:    ticker,
-				Timestamp: timestamp,
-				Volume:    quote.Volume,
-				Open:      quote.Open,
-				High:      quote.High,
-				Low:       quote.Low,
-				Close:     quote.Close,
+	return decodeChart(chart, ticker, from, to), nil
+}
+
+func GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, c context.Context, client *http.Client, baseUrl string, token string, tickers []string, interval string, from time.Time, to time.Time) {
+	chunks := chunkSlice(tickers, batchMaxLen)
+	for _, chunk := range chunks {
+		wg.Add(1)
+		go func(slice []string, window string, from time.Time, to time.Time) {
+			queryUrl := getBatchUrl(baseUrl, token, slice, interval, from, to)
+			req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
+			if err != nil {
+				log.Fatal(err)
 			}
-			points = append(points, point)
-		}
+			ctx, cancel := context.WithTimeout(c, time.Duration(5*time.Second))
+			defer cancel()
+			req = req.WithContext(ctx)
+			res, err := client.Do(req)
+			if err != nil {
+				return
+			}
+			defer res.Body.Close()
+			if res.StatusCode != http.StatusOK {
+				println(fmt.Sprintf("Non-OK HTTP status: %d", res.StatusCode))
+			}
+
+			response := map[string]Response{}
+			err = json.NewDecoder(res.Body).Decode(&response)
+			if err != nil {
+				return
+			}
+			for ticker := range response {
+				chart := response[ticker].Chart
+				points := decodeChart(chart, ticker, from, to)
+				out := &types.Chart{
+					Ohlc:   points,
+					Ticker: ticker,
+				}
+				chartChan <- out
+			}
+			wg.Done()
+		}(chunk, interval, from, to)
 	}
-	return points, err
+
 }
