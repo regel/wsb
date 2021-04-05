@@ -15,7 +15,7 @@ Although the Yahoo Finance API has officially been closed down, it does still wo
 
 Other finance data sources supported in this package:
 
-- [IEX Cloud](https://iexcloud.io/docs/api/): IEX Cloud is a platform that makes financial data and services accessible to everyone. You have to register to get an API token.
+- [IEX Cloud](https://iexcloud.io/docs/api/): IEX Cloud is a platform that makes financial data and services accessible to everyone. There is a free tier for use during initial API exploration and application development. During registration you will receive security tokens required to access this API
 
 ## Installation
 
