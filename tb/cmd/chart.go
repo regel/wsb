@@ -31,7 +31,8 @@ import (
 )
 
 const (
-	dateFormat = "2006-01-02"
+	dateFormat     = "2006-01-02"
+	dateFormatLong = "2006-01-02T15:04:05"
 )
 
 func newOhlcCmd() *cobra.Command {
@@ -52,14 +53,33 @@ func newOhlcCmd() *cobra.Command {
 	return cmd
 }
 
+func parseDate(date string) (time.Time, error) {
+	dt, err := time.Parse(dateFormat, date)
+	if err == nil {
+		return dt, nil
+	}
+	return time.Parse(dateFormatLong, date)
+}
+
+func formatDate(t time.Time) string {
+	h := t.Hour()
+	m := t.Minute()
+	s := t.Second()
+	n := t.Nanosecond()
+	if h == 0 && m == 0 && s == 0 && n == 0 {
+		return t.Format(dateFormat)
+	}
+	return t.Format(dateFormatLong)
+}
+
 func addOhlcFlags(flags *flag.FlagSet) {
 	addCommonFlags(flags)
 	now := time.Now()
 	minus7d := now.AddDate(0, 0, -7)
 	flags.String("from", minus7d.Format(dateFormat), heredoc.Doc(`
-Start time of Ohlc time range. Format: 2006-01-02`))
+Start time of Ohlc time range. Format: 2006-01-02, or 2006-01-02T15:04:05`))
 	flags.String("to", now.Format(dateFormat), heredoc.Doc(`
-End time of Ohlc time range. Format: 2006-01-02`))
+End time of Ohlc time range. Format: 2006-01-02 or 2006-01-02T15:04:05`))
 	flags.String("interval", "1d", heredoc.Doc(`
                 Time interval range. Supported values: (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)`))
 }
@@ -89,7 +109,7 @@ func chart(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	from, err := time.Parse(dateFormat, fromStr)
+	from, err := parseDate(fromStr)
 	if err != nil {
 		return err
 	}
@@ -97,7 +117,7 @@ func chart(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	to, err := time.Parse(dateFormat, toStr)
+	to, err := parseDate(toStr)
 	if err != nil {
 		return err
 	}
@@ -125,7 +145,7 @@ func PrintOhlc(chartChan chan *types.Chart) {
 		})
 		for _, row := range data.Ohlc {
 			history.Append([]string{
-				row.Timestamp.Format("2006-01-02"),
+				formatDate(row.Timestamp),
 				fmt.Sprintf("%.02f", row.Open),
 				fmt.Sprintf("%.02f", row.High),
 				fmt.Sprintf("%.02f", row.Low),

@@ -71,28 +71,6 @@ func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
 	return (t.Equal(from) || t.After(from)) && (t.Equal(to) || t.Before(to))
 }
 
-func getUrl(baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) string {
-	base, err := url.Parse(baseUrl)
-	if err != nil {
-		panic("Can't parse IEX Cloud base url")
-	}
-
-	max := int(math.Ceil(time.Since(from).Hours() / 24))
-	rangeValue := fmt.Sprintf("%dd", max)
-	values := url.Values{
-		"token":   []string{token},
-		"symbols": []string{ticker},
-		"range":   []string{rangeValue},
-		"types":   []string{"chart"},
-	}
-	relative := &url.URL{
-		Path:     "/v1/stock/market/batch",
-		RawQuery: values.Encode(),
-	}
-
-	return base.ResolveReference(relative).String()
-}
-
 func getBatchUrl(baseUrl string, token string, tickers []string, interval string, from time.Time, to time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
@@ -104,6 +82,9 @@ func getBatchUrl(baseUrl string, token string, tickers []string, interval string
 		max = 5
 	}
 	rangeValue := fmt.Sprintf("%dd", max)
+	if to.Sub(from) <= time.Duration(24*time.Hour) {
+		rangeValue = "1d"
+	}
 	values := url.Values{
 		"token":   []string{token},
 		"symbols": []string{strings.Join(tickers, ",")},
@@ -147,7 +128,8 @@ func decodeChart(chart []Chart, ticker string, from time.Time, to time.Time) []t
 }
 
 func GetOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
-	queryUrl := getUrl(baseUrl, token, ticker, interval, from, to)
+	slice := []string{ticker}
+	queryUrl := getBatchUrl(baseUrl, token, slice, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)
