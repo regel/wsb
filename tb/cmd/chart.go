@@ -38,9 +38,12 @@ const (
 func newOhlcCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "chart",
-		Short: "Prints tables of price history to the current shell",
+		Short: "Prints tables of stock price history (OHLC) to the current shell",
 		Long: heredoc.Doc(`
 			Query finance Chart data points for selected tickers.
+			An open-high-low-close chart (also OHLC) is a type of chart typically
+			used to illustrate movements in the price of a financial instrument over time.
+
 			Response includes:
 			* Prices: Open, High, Low, Close
 			* Volume
