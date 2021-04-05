@@ -21,9 +21,7 @@ Other finance data sources supported in this package:
 
 ### Binary Distribution
 
-Download the release distribution for your OS from the Releases page:
-
-https://github.com/regel/tinkerbell/releases
+Download the release distribution for your OS from the [Releases](https://github.com/regel/tinkerbell/releases) page.
 
 Unpack the `tb` binary, add it to your PATH, and you are good to go!
 
