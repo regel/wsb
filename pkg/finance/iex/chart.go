@@ -50,7 +50,7 @@ func getUrl(baseUrl string, token string, ticker string, interval string, startT
 		panic("Can't parse IEX Cloud base url")
 	}
 
-	max := int(math.Ceil(time.Now().Sub(startTime).Hours() / 24))
+	max := int(math.Ceil(time.Since(startTime).Hours() / 24))
 	rangeValue := fmt.Sprintf("%dd", max)
 	values := url.Values{
 		"token":   []string{token},
