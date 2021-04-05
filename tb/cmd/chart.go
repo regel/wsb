@@ -44,7 +44,7 @@ func newOhlcCmd() *cobra.Command {
 		Use:   "chart",
 		Short: "Prints tables of price history to the current shell",
 		Long: heredoc.Doc(`
-			Query Yahoo finance Ohlc data points for selected tickers.
+			Query finance Chart data points for selected tickers.
 			Response includes:
 			* Prices: Open, High, Low, Close
 			* Volume

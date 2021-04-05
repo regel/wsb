@@ -17,6 +17,7 @@ package finance
 import (
 	"context"
 	"github.com/regel/tinkerbell/pkg/config"
+	"github.com/regel/tinkerbell/pkg/finance/iex"
 	"github.com/regel/tinkerbell/pkg/finance/types"
 	"github.com/regel/tinkerbell/pkg/finance/yahoo"
 	"golang.org/x/time/rate"
@@ -28,6 +29,8 @@ import (
 type Handler struct {
 	yahooFinanceUrl      string
 	yahooFinanceQueryUrl string
+	iexCloudQueryUrl     string
+	iexCloudSecretToken  string
 
 	client  *http.Client
 	limiter *rate.Limiter
@@ -44,12 +47,16 @@ func NewHandler(config config.Configuration) (*Handler, error) {
 	var cli = &http.Client{
 		Transport: netTransport,
 	}
-	// usage is capped at 2,000 requests/hour
+	// Yahoo Finance usage is capped at 2,000 requests/hour
 	limiter := rate.NewLimiter(rate.Every(time.Hour/2000), config.Bursts)
-
+	if config.IexCloudSecretToken != "" {
+		limiter = rate.NewLimiter(rate.Every(time.Second/100), config.Bursts)
+	}
 	h := &Handler{
 		yahooFinanceUrl:      config.YahooFinanceUrl,
 		yahooFinanceQueryUrl: config.YahooFinanceQueryUrl,
+		iexCloudQueryUrl:     config.IexCloudQueryUrl,
+		iexCloudSecretToken:  config.IexCloudSecretToken,
 		client:               cli,
 		limiter:              limiter,
 	}
@@ -65,10 +72,16 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*types.HoldersBr
 }
 
 func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, startTime time.Time, endTime time.Time) ([]types.Ohlc, error) {
-	err := h.limiter.Wait(c)
+	var points []types.Ohlc
+	var err error
+	err = h.limiter.Wait(c)
 	if err != nil {
 		return nil, err
 	}
-	points, err := yahoo.ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, startTime, endTime)
+	if h.iexCloudSecretToken != "" {
+		points, err = iex.ReadOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, startTime, endTime)
+	} else {
+		points, err = yahoo.ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, startTime, endTime)
+	}
 	return points, err
 }

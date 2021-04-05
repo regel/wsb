@@ -44,6 +44,8 @@ var (
 type Configuration struct {
 	YahooFinanceUrl      string        `mapstructure:"yahoo-finance-url"`
 	YahooFinanceQueryUrl string        `mapstructure:"yahoo-finance-query-url"`
+	IexCloudQueryUrl     string        `mapstructure:"iex-cloud-query-url"`
+	IexCloudSecretToken  string        `mapstructure:"iex-cloud-secret-token"`
 	DialTimeout          time.Duration `mapstructure:"dial-timeout"`
 	Bursts               int           `mapstructure:"bursts"`
 	Tickers              []string      `mapstructure:"tickers"`

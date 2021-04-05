@@ -25,8 +25,9 @@ import (
 )
 
 const (
-	defaultYahooBaseUrl  = "https://finance.yahoo.com"
-	defaultYahooQueryUrl = "https://query2.finance.yahoo.com"
+	defaultYahooBaseUrl     = "https://finance.yahoo.com"
+	defaultYahooQueryUrl    = "https://query2.finance.yahoo.com"
+	defaultIexCloudQueryUrl = "https://cloud.iexapis.com" // See https://iexcloud.io/docs/api
 )
 
 var (
@@ -67,6 +68,10 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		Yahoo Finance Base Url`))
 	flags.String("yahoo-finance-query-url", defaultYahooQueryUrl, heredoc.Doc(`
 		Yahoo Finance Query Url`))
+	flags.String("iex-cloud-query-url", defaultIexCloudQueryUrl, heredoc.Doc(`
+		IEX Cloud is a platform that makes financial data and services accessible to everyone`))
+	flags.String("iex-cloud-secret-token", "", heredoc.Doc(`
+		Secret token to enable access to IEX Cloud API`))
 	flags.StringSlice("tickers", []string{}, heredoc.Doc(`
 		Names of selected tickers`))
 	flags.Bool("print-config", false, heredoc.Doc(`
