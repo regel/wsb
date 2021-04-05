@@ -51,15 +51,15 @@ type Quote struct {
 	Close  []float64 `json:"close"`
 }
 
-func getUrl(baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) string {
+func getUrl(baseUrl string, ticker string, interval string, from time.Time, to time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
 		panic("Can't parse Yahoo Finance base url")
 	}
 	values := url.Values{
 		"interval":   []string{interval},
-		"period1":    []string{strconv.FormatInt(startTime.Unix(), 10)},
-		"period2":    []string{strconv.FormatInt(endTime.Unix(), 10)},
+		"period1":    []string{strconv.FormatInt(from.Unix(), 10)},
+		"period2":    []string{strconv.FormatInt(to.Unix(), 10)},
 		"region":     []string{"US"},
 		"corsDomain": []string{"com.finance.yahoo"},
 	}
@@ -71,8 +71,8 @@ func getUrl(baseUrl string, ticker string, interval string, startTime time.Time,
 	return base.ResolveReference(relative).String()
 }
 
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, startTime time.Time, endTime time.Time) ([]types.Ohlc, error) {
-	queryUrl := getUrl(baseUrl, ticker, interval, startTime, endTime)
+func ReadOhlc(c context.Context, client *http.Client, baseUrl string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+	queryUrl := getUrl(baseUrl, ticker, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)

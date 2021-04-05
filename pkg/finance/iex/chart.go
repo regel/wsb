@@ -44,13 +44,13 @@ func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
 	return (t.Equal(from) || t.After(from)) && (t.Equal(to) || t.Before(to))
 }
 
-func getUrl(baseUrl string, token string, ticker string, interval string, startTime time.Time, endTime time.Time) string {
+func getUrl(baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
 		panic("Can't parse IEX Cloud base url")
 	}
 
-	max := int(math.Ceil(time.Since(startTime).Hours() / 24))
+	max := int(math.Ceil(time.Since(from).Hours() / 24))
 	rangeValue := fmt.Sprintf("%dd", max)
 	values := url.Values{
 		"token":   []string{token},
@@ -66,8 +66,8 @@ func getUrl(baseUrl string, token string, ticker string, interval string, startT
 	return base.ResolveReference(relative).String()
 }
 
-func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, startTime time.Time, endTime time.Time) ([]types.Ohlc, error) {
-	queryUrl := getUrl(baseUrl, token, ticker, interval, startTime, endTime)
+func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+	queryUrl := getUrl(baseUrl, token, ticker, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -93,7 +93,7 @@ func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token stri
 	chart := response[ticker].Chart
 	for _, quote := range chart {
 		timestamp, _ := time.Parse("2006-01-02", quote.Date)
-		if timeWithinRange(timestamp, startTime, endTime) {
+		if timeWithinRange(timestamp, from, to) {
 			point := types.Ohlc{
 				Ticker:    ticker,
 				Timestamp: timestamp,

@@ -19,11 +19,11 @@ tb chart [flags]
 ```
       --config string       Config file
       --debug               Print API calls to external tools to stdout
-      --end-time string     End time of Ohlc time range. Format: 2006-01-02
+      --to string           End time of Ohlc time range. Format: 2006-01-02
   -h, --help                help for chart
       --interval string     Time interval range. Supported values: (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max) (default "1d")
       --print-config        Prints the configuration to stderr
-      --start-time string   Start time of Ohlc time range. Format: 2006-01-02
+      --from string         Start time of Ohlc time range. Format: 2006-01-02
       --tickers strings     Names of selected tickers
 ```
 

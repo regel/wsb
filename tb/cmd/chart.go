@@ -59,9 +59,11 @@ func newOhlcCmd() *cobra.Command {
 
 func addOhlcFlags(flags *flag.FlagSet) {
 	addCommonFlags(flags)
-	flags.String("start-time", "", heredoc.Doc(`
+	now := time.Now()
+	minus7d := now.AddDate(0, 0, -7)
+	flags.String("from", minus7d.Format(dateFormat), heredoc.Doc(`
 Start time of Ohlc time range. Format: 2006-01-02`))
-	flags.String("end-time", "", heredoc.Doc(`
+	flags.String("to", now.Format(dateFormat), heredoc.Doc(`
 End time of Ohlc time range. Format: 2006-01-02`))
 	flags.String("interval", "1d", heredoc.Doc(`
                 Time interval range. Supported values: (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)`))
@@ -88,27 +90,27 @@ func chart(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	startStr, err := cmd.Flags().GetString("start-time")
+	fromStr, err := cmd.Flags().GetString("from")
 	if err != nil {
 		return err
 	}
-	startTime, err := time.Parse(dateFormat, startStr)
+	from, err := time.Parse(dateFormat, fromStr)
 	if err != nil {
 		return err
 	}
-	endStr, err := cmd.Flags().GetString("end-time")
+	toStr, err := cmd.Flags().GetString("to")
 	if err != nil {
 		return err
 	}
-	endTime, err := time.Parse(dateFormat, endStr)
+	to, err := time.Parse(dateFormat, toStr)
 	if err != nil {
 		return err
 	}
 	chartChan := make(chan *chartData)
 	for _, ticker := range configuration.Tickers {
 		wg.Add(1)
-		go func(t string, window string, start time.Time, end time.Time) {
-			points, err := handler.GetOhlc(context, t, window, start, end)
+		go func(t string, window string, from time.Time, to time.Time) {
+			points, err := handler.GetOhlc(context, t, window, from, to)
 			if err != nil {
 				wg.Done()
 				println(fmt.Sprintf("Error fetching '%s' data: %v", t, err))
@@ -120,7 +122,7 @@ func chart(cmd *cobra.Command, args []string) error {
 			}
 			chartChan <- data
 			wg.Done()
-		}(ticker, interval, startTime, endTime)
+		}(ticker, interval, from, to)
 	}
 	go func() {
 		wg.Wait()

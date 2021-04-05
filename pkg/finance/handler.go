@@ -71,7 +71,7 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*types.HoldersBr
 	return yahoo.GetHolders(c, h.client, h.yahooFinanceUrl, ticker)
 }
 
-func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, startTime time.Time, endTime time.Time) ([]types.Ohlc, error) {
+func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
 	var points []types.Ohlc
 	var err error
 	err = h.limiter.Wait(c)
@@ -79,9 +79,9 @@ func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, sta
 		return nil, err
 	}
 	if h.iexCloudSecretToken != "" {
-		points, err = iex.ReadOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, startTime, endTime)
+		points, err = iex.ReadOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, from, to)
 	} else {
-		points, err = yahoo.ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, startTime, endTime)
+		points, err = yahoo.ReadOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, from, to)
 	}
 	return points, err
 }

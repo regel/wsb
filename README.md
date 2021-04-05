@@ -69,13 +69,13 @@ The following example show various way of configuring the same thing:
 
 #### CLI
 
-    tb chart --tickers AAPL,GME --start-time "2021-01-01"
+    tb chart --tickers AAPL,GME --from "2021-01-01"
 
 #### Environment Variables
 
     export TB_TICKERS=AAPL,GME
 
-    tb chart --start-time "2021-01-01"
+    tb chart --from "2021-01-01"
 
 #### Config File
 
@@ -89,7 +89,7 @@ tickers:
 
 #### Config Usage
 
-    tb chart --config config.yaml --start-time "2021-01-01"
+    tb chart --config config.yaml --from "2021-01-01"
 
 
 `tb` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
