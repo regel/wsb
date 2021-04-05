@@ -40,6 +40,10 @@ type Chart struct {
 	Close   float64 `json:"close"`
 }
 
+func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
+	return (t.Equal(from) || t.After(from)) && (t.Equal(to) || t.Before(to))
+}
+
 func getUrl(baseUrl string, token string, ticker string, interval string, startTime time.Time, endTime time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
@@ -89,7 +93,7 @@ func ReadOhlc(c context.Context, client *http.Client, baseUrl string, token stri
 	chart := response[ticker].Chart
 	for _, quote := range chart {
 		timestamp, _ := time.Parse("2006-01-02", quote.Date)
-		if timestamp.After(startTime) && timestamp.Before(endTime) {
+		if timeWithinRange(timestamp, startTime, endTime) {
 			point := types.Ohlc{
 				Ticker:    ticker,
 				Timestamp: timestamp,

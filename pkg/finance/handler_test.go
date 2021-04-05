@@ -389,6 +389,56 @@ const sampleHoldersResponse = `
 </html>
 `
 
+const sampleIexChartResponse = `
+{
+    "AAPL": {
+        "chart": [
+            {
+                "close": 120.13,
+                "high": 123.6,
+                "low": 118.62,
+                "open": 121.75,
+                "symbol": "AAPL",
+                "volume": 178154975,
+                "id": "HISTORICAL_PRICES",
+                "key": "AAPL",
+                "subkey": "",
+                "date": "2021-03-04",
+                "updated": 1614909622000,
+                "changeOverTime": 0,
+                "marketChangeOverTime": 0,
+                "uOpen": 121.75,
+                "uClose": 120.13,
+                "uHigh": 123.6,
+                "uLow": 118.62,
+                "uVolume": 178154975,
+                "fOpen": 121.75,
+                "fClose": 120.13,
+                "fHigh": 123.6,
+                "fLow": 118.62,
+                "fVolume": 178154975,
+                "label": "Mar 4, 21",
+                "change": 0,
+                "changePercent": 0
+            }
+	]
+    }
+}
+`
+
+const sampleIexChartResponseNoContent = `
+{
+    "AAPL": {
+        "chart": [
+	]
+    },
+    "GME": {
+        "chart": [
+	]
+    }
+}
+`
+
 func strftime(s string) time.Time {
 	tm, _ := time.Parse("2006-01-02", s)
 	return tm
@@ -659,6 +709,89 @@ func TestYahooChartNoContent(t *testing.T) {
 		Bursts:               1,
 		Tickers:              []string{"AAPL"},
 		Debug:                false,
+	}
+	n, err := NewHandler(*configuration)
+	require.NoError(t, err)
+
+	from := time.Unix(1617283800, 0)
+	to := time.Unix(1617283800, 0)
+	out, err := n.GetOhlc(context, "AAPL", "1d", from, to)
+	require.NoError(t, err)
+
+	require.Empty(t, out)
+}
+
+func TestIexCloudChartResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rsp string
+		if r.URL.Path == "/v1/stock/market/batch" {
+			rsp = sampleIexChartResponse
+			w.Header()["Content-Type"] = []string{"application/json"}
+		} else {
+			panic("Cannot handle request")
+		}
+
+		fmt.Fprintln(w, rsp)
+	}))
+	defer ts.Close()
+
+	context := context.Background()
+	configuration := &config.Configuration{
+		IexCloudQueryUrl:    ts.URL,
+		IexCloudSecretToken: "SECRET_TOKEN",
+		DialTimeout:         time.Second,
+		Bursts:              1,
+		Tickers:             []string{"AAPL"},
+		Debug:               false,
+	}
+	n, err := NewHandler(*configuration)
+	require.NoError(t, err)
+
+	tm, _ := time.Parse("2006-01-02", "2021-03-04")
+	expected := types.Ohlc{
+		Ticker:    "AAPL",
+		Timestamp: tm,
+		Open:      121.75,
+		High:      123.6,
+		Low:       118.62,
+		Close:     120.13,
+		Volume:    178154975,
+	}
+
+	out, err := n.GetOhlc(context, "AAPL", "1d", tm, tm)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, len(out), "Should contain one item")
+	require.Equal(t, expected.Ticker, out[0].Ticker, "Ticker must be the same")
+	require.Equal(t, expected.Volume, out[0].Volume, "Volume must be the same")
+	require.InDelta(t, expected.Open, out[0].Open, 0.01, "Open must be the same")
+	require.InDelta(t, expected.High, out[0].High, 0.01, "High must be the same")
+	require.InDelta(t, expected.Low, out[0].Low, 0.01, "Low must be the same")
+	require.InDelta(t, expected.Close, out[0].Close, 0.01, "Close must be the same")
+}
+
+func TestIexCloudChartNoContent(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rsp string
+		if r.URL.Path == "/v1/stock/market/batch" {
+			rsp = sampleIexChartResponseNoContent
+			w.Header()["Content-Type"] = []string{"application/json"}
+		} else {
+			panic("Cannot handle request")
+		}
+
+		fmt.Fprintln(w, rsp)
+	}))
+	defer ts.Close()
+
+	context := context.Background()
+	configuration := &config.Configuration{
+		IexCloudQueryUrl:    ts.URL,
+		IexCloudSecretToken: "SECRET_TOKEN",
+		DialTimeout:         time.Second,
+		Bursts:              1,
+		Tickers:             []string{"AAPL"},
+		Debug:               false,
 	}
 	n, err := NewHandler(*configuration)
 	require.NoError(t, err)
