@@ -664,9 +664,10 @@ func TestYahooChartResponse(t *testing.T) {
 	n, err := NewHandler(*configuration)
 	require.NoError(t, err)
 
+	loc, _ := time.LoadLocation("America/New_York")
 	expected := types.Ohlc{
 		Ticker:    "AAPL",
-		Timestamp: time.Unix(1617348113, 0),
+		Timestamp: time.Unix(1617307203, 0).In(loc),
 		Open:      123.66000366210938,
 		High:      124.18000030517578,
 		Low:       122.48999786376953,
@@ -674,8 +675,8 @@ func TestYahooChartResponse(t *testing.T) {
 		Volume:    75089134,
 	}
 
-	from := time.Unix(1617348113, 0)
-	to := time.Unix(1617348113, 0)
+	from := time.Unix(1617307203, 0)
+	to := time.Unix(1617307203, 0)
 	out, err := n.GetOhlc(context, "AAPL", "1d", from, to)
 	require.NoError(t, err)
 
@@ -714,9 +715,10 @@ func TestYahooChartBatchResponse(t *testing.T) {
 	n, err := NewHandler(*configuration)
 	require.NoError(t, err)
 
+	loc, _ := time.LoadLocation("America/New_York")
 	expected := types.Ohlc{
 		Ticker:    "AAPL",
-		Timestamp: time.Unix(1617348113, 0),
+		Timestamp: time.Unix(1617307203, 0).In(loc),
 		Open:      123.66000366210938,
 		High:      124.18000030517578,
 		Low:       122.48999786376953,
@@ -724,8 +726,8 @@ func TestYahooChartBatchResponse(t *testing.T) {
 		Volume:    75089134,
 	}
 
-	from := time.Unix(1617348113, 0)
-	to := time.Unix(1617348113, 0)
+	from := time.Unix(1617307203, 0)
+	to := time.Unix(1617307203, 0)
 	var wg sync.WaitGroup
 	tickers := []string{"AAPL"}
 	chartChan := make(chan *types.Chart)

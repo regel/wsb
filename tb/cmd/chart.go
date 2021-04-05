@@ -70,9 +70,9 @@ func formatDate(t time.Time) string {
 	s := t.Second()
 	n := t.Nanosecond()
 	if h == 0 && m == 0 && s == 0 && n == 0 {
-		return t.Format(dateFormat)
+		return t.In(time.UTC).Format(dateFormat)
 	}
-	return t.Format(dateFormatLong)
+	return t.In(time.UTC).Format(dateFormatLong)
 }
 
 func addOhlcFlags(flags *flag.FlagSet) {

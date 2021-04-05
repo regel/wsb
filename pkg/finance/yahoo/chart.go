@@ -34,7 +34,13 @@ type Chart struct {
 	Result []Result `json:"result"`
 }
 
+type Meta struct {
+	Timezone             string `json:"timezone"`
+	ExchangeTimezoneName string `json:"exchangeTimezoneName"`
+}
+
 type Result struct {
+	Meta       Meta      `json:"meta"`
 	Timestamps []int64   `json:"timestamp"`
 	Indicators Indicator `json:"indicators"`
 }
@@ -51,10 +57,17 @@ type Quote struct {
 	Close  []float64 `json:"close"`
 }
 
+func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
+	return (t.Equal(from) || t.After(from)) && (t.Equal(to) || t.Before(to))
+}
+
 func getUrl(baseUrl string, ticker string, interval string, from time.Time, to time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
 		panic("Can't parse Yahoo Finance base url")
+	}
+	if to.Sub(from) < time.Duration(24*time.Hour) {
+		to = from.AddDate(0, 0, 1)
 	}
 	values := url.Values{
 		"interval":   []string{interval},
@@ -96,17 +109,24 @@ func GetOhlc(c context.Context, client *http.Client, baseUrl string, ticker stri
 	}
 	points := make([]types.Ohlc, 0)
 	quote := response.Chart.Result[0].Indicators.Quote[0]
+	loc, err := time.LoadLocation(response.Chart.Result[0].Meta.ExchangeTimezoneName)
+	if err != nil {
+		return nil, err
+	}
 	for j, timestamp := range response.Chart.Result[0].Timestamps {
-		ohlc := types.Ohlc{
-			Ticker:    ticker,
-			Timestamp: time.Unix(timestamp, 0),
-			Volume:    quote.Volume[j],
-			Open:      quote.Open[j],
-			High:      quote.High[j],
-			Low:       quote.Low[j],
-			Close:     quote.Close[j],
+		t := time.Unix(timestamp, 0).In(loc)
+		if timeWithinRange(t, from, to) {
+			ohlc := types.Ohlc{
+				Ticker:    ticker,
+				Timestamp: t,
+				Volume:    quote.Volume[j],
+				Open:      quote.Open[j],
+				High:      quote.High[j],
+				Low:       quote.Low[j],
+				Close:     quote.Close[j],
+			}
+			points = append(points, ohlc)
 		}
-		points = append(points, ohlc)
 	}
 	return points, err
 }
