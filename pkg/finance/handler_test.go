@@ -7,6 +7,7 @@ import (
 	"github.com/regel/tinkerbell/pkg/finance/types"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -687,6 +688,70 @@ func TestYahooChartResponse(t *testing.T) {
 	require.InDelta(t, expected.Close, out[0].Close, 0.01, "Close must be the same")
 }
 
+func TestYahooChartBatchResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rsp string
+		if r.URL.Path == "/v8/finance/chart/AAPL" {
+			rsp = sampleChartResponse
+			w.Header()["Content-Type"] = []string{"application/json"}
+		} else {
+			panic("Cannot handle request")
+		}
+
+		fmt.Fprintln(w, rsp)
+	}))
+	defer ts.Close()
+
+	context := context.Background()
+	configuration := &config.Configuration{
+		YahooFinanceUrl:      ts.URL,
+		YahooFinanceQueryUrl: ts.URL,
+		DialTimeout:          time.Second,
+		Bursts:               1,
+		Tickers:              []string{"AAPL"},
+		Debug:                false,
+	}
+	n, err := NewHandler(*configuration)
+	require.NoError(t, err)
+
+	expected := types.Ohlc{
+		Ticker:    "AAPL",
+		Timestamp: time.Unix(1617348113, 0),
+		Open:      123.66000366210938,
+		High:      124.18000030517578,
+		Low:       122.48999786376953,
+		Close:     123.0,
+		Volume:    75089134,
+	}
+
+	from := time.Unix(1617348113, 0)
+	to := time.Unix(1617348113, 0)
+	var wg sync.WaitGroup
+	tickers := []string{"AAPL"}
+	chartChan := make(chan *types.Chart)
+	n.GetOhlcBatch(context, &wg, chartChan, tickers, "1d", from, to)
+	go func() {
+		wg.Wait()
+		close(chartChan)
+	}()
+
+	out := <-chartChan
+	// Make sure that the function does close the channel
+	_, ok := (<-chartChan)
+
+	// If we can receive on the channel then it is NOT closed
+	if ok {
+		t.Error("Channel is not closed")
+	}
+	require.Equal(t, 1, len(out.Ohlc), "Should contain one item")
+	require.Equal(t, expected.Ticker, out.Ohlc[0].Ticker, "Ticker must be the same")
+	require.Equal(t, expected.Volume, out.Ohlc[0].Volume, "Volume must be the same")
+	require.InDelta(t, expected.Open, out.Ohlc[0].Open, 0.01, "Open must be the same")
+	require.InDelta(t, expected.High, out.Ohlc[0].High, 0.01, "High must be the same")
+	require.InDelta(t, expected.Low, out.Ohlc[0].Low, 0.01, "Low must be the same")
+	require.InDelta(t, expected.Close, out.Ohlc[0].Close, 0.01, "Close must be the same")
+}
+
 func TestYahooChartNoContent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
@@ -768,6 +833,69 @@ func TestIexCloudChartResponse(t *testing.T) {
 	require.InDelta(t, expected.High, out[0].High, 0.01, "High must be the same")
 	require.InDelta(t, expected.Low, out[0].Low, 0.01, "Low must be the same")
 	require.InDelta(t, expected.Close, out[0].Close, 0.01, "Close must be the same")
+}
+
+func TestIexCloudChartBatchResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rsp string
+		if r.URL.Path == "/v1/stock/market/batch" {
+			rsp = sampleIexChartResponse
+			w.Header()["Content-Type"] = []string{"application/json"}
+		} else {
+			panic("Cannot handle request")
+		}
+
+		fmt.Fprintln(w, rsp)
+	}))
+	defer ts.Close()
+
+	context := context.Background()
+	configuration := &config.Configuration{
+		IexCloudQueryUrl:    ts.URL,
+		IexCloudSecretToken: "SECRET_TOKEN",
+		DialTimeout:         time.Second,
+		Bursts:              1,
+		Tickers:             []string{"AAPL"},
+		Debug:               false,
+	}
+	n, err := NewHandler(*configuration)
+	require.NoError(t, err)
+
+	tm, _ := time.Parse("2006-01-02", "2021-03-04")
+	expected := types.Ohlc{
+		Ticker:    "AAPL",
+		Timestamp: tm,
+		Open:      121.75,
+		High:      123.6,
+		Low:       118.62,
+		Close:     120.13,
+		Volume:    178154975,
+	}
+
+	var wg sync.WaitGroup
+	tickers := []string{"AAPL"}
+	chartChan := make(chan *types.Chart)
+	n.GetOhlcBatch(context, &wg, chartChan, tickers, "1d", tm, tm)
+	go func() {
+		wg.Wait()
+		close(chartChan)
+	}()
+
+	out := <-chartChan
+	// Make sure that the function does close the channel
+	_, ok := (<-chartChan)
+
+	// If we can receive on the channel then it is NOT closed
+	if ok {
+		t.Error("Channel is not closed")
+	}
+	require.Equal(t, 1, len(out.Ohlc), "Should contain one item")
+	require.Equal(t, expected.Ticker, out.Ohlc[0].Ticker, "Ticker must be the same")
+	require.Equal(t, expected.Volume, out.Ohlc[0].Volume, "Volume must be the same")
+	require.InDelta(t, expected.Open, out.Ohlc[0].Open, 0.01, "Open must be the same")
+	require.InDelta(t, expected.High, out.Ohlc[0].High, 0.01, "High must be the same")
+	require.InDelta(t, expected.Low, out.Ohlc[0].Low, 0.01, "Low must be the same")
+	require.InDelta(t, expected.Close, out.Ohlc[0].Close, 0.01, "Close must be the same")
 }
 
 func TestIexCloudChartNoContent(t *testing.T) {
