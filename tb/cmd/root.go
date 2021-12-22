@@ -25,9 +25,11 @@ import (
 )
 
 const (
-	defaultYahooBaseUrl     = "https://finance.yahoo.com"
-	defaultYahooQueryUrl    = "https://query2.finance.yahoo.com"
-	defaultIexCloudQueryUrl = "https://cloud.iexapis.com" // See https://iexcloud.io/docs/api
+	defaultProvider          = "yahoo"
+	defaultYahooBaseUrl      = "https://finance.yahoo.com"
+	defaultYahooQueryUrl     = "https://query2.finance.yahoo.com"
+	defaultIexCloudQueryUrl  = "https://cloud.iexapis.com" // See https://iexcloud.io/docs/api
+	defaultCoingeckoQueryUrl = "https://api.coingecko.com"
 )
 
 var (
@@ -37,7 +39,7 @@ var (
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tb",
-		Short: "The Go client to get stock market data",
+		Short: "The Go client to get stock market and cryptocurrencies market data",
 		Long: heredoc.Doc(`
 			Get finance data
 			* Price history
@@ -64,6 +66,8 @@ func Execute() {
 
 func addCommonFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&cfgFile, "config", "", "Config file")
+	flags.String("provider", defaultProvider, heredoc.Doc(`
+                Provider of market data. Supported providers: 'yahoo' (default), 'iex', 'coingecko'`))
 	flags.String("yahoo-finance-url", defaultYahooBaseUrl, heredoc.Doc(`
 		Yahoo Finance Base Url`))
 	flags.String("yahoo-finance-query-url", defaultYahooQueryUrl, heredoc.Doc(`
@@ -72,6 +76,10 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		IEX Cloud is a platform that makes financial data and services accessible to everyone`))
 	flags.String("iex-cloud-secret-token", "", heredoc.Doc(`
 		Secret token to enable access to IEX Cloud API`))
+	flags.String("coingecko-query-url", defaultCoingeckoQueryUrl, heredoc.Doc(`
+		The Most Comprehensive Cryptocurrency API`))
+	flags.String("coingecko-secret-token", "", heredoc.Doc(`
+		Secret token to enable access to the Paid API`))
 	flags.StringSlice("tickers", []string{}, heredoc.Doc(`
 		Names of selected tickers`))
 	flags.Bool("print-config", false, heredoc.Doc(`

@@ -127,9 +127,9 @@ func decodeChart(chart []Chart, ticker string, from time.Time, to time.Time) []t
 	return points
 }
 
-func GetOhlc(c context.Context, client *http.Client, baseUrl string, token string, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
+func (p Provider) GetOhlc(c context.Context, client *http.Client, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
 	slice := []string{ticker}
-	queryUrl := getBatchUrl(baseUrl, token, slice, interval, from, to)
+	queryUrl := getBatchUrl(p.IexCloudQueryUrl, p.IexCloudSecretToken, slice, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -155,12 +155,12 @@ func GetOhlc(c context.Context, client *http.Client, baseUrl string, token strin
 	return decodeChart(chart, ticker, from, to), nil
 }
 
-func GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, c context.Context, client *http.Client, baseUrl string, token string, tickers []string, interval string, from time.Time, to time.Time) {
+func (p Provider) GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, c context.Context, client *http.Client, tickers []string, interval string, from time.Time, to time.Time) {
 	chunks := chunkSlice(tickers, batchMaxLen)
 	for _, chunk := range chunks {
 		wg.Add(1)
 		go func(slice []string, window string, from time.Time, to time.Time) {
-			queryUrl := getBatchUrl(baseUrl, token, slice, interval, from, to)
+			queryUrl := getBatchUrl(p.IexCloudQueryUrl, p.IexCloudSecretToken, slice, interval, from, to)
 			req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 			if err != nil {
 				log.Fatal(err)
@@ -195,4 +195,8 @@ func GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, c context.Con
 		}(chunk, interval, from, to)
 	}
 
+}
+
+func (p Provider) BatchSupported() bool {
+	return true
 }

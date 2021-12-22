@@ -461,6 +461,7 @@ func TestYahooHoldersResponse(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:             "yahoo",
 		YahooFinanceUrl:      ts.URL,
 		YahooFinanceQueryUrl: ts.URL,
 		DialTimeout:          time.Second,
@@ -654,6 +655,7 @@ func TestYahooChartResponse(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:             "yahoo",
 		YahooFinanceUrl:      ts.URL,
 		YahooFinanceQueryUrl: ts.URL,
 		DialTimeout:          time.Second,
@@ -705,6 +707,7 @@ func TestYahooChartBatchResponse(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:             "yahoo",
 		YahooFinanceUrl:      ts.URL,
 		YahooFinanceQueryUrl: ts.URL,
 		DialTimeout:          time.Second,
@@ -770,6 +773,7 @@ func TestYahooChartNoContent(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:             "yahoo",
 		YahooFinanceUrl:      ts.URL,
 		YahooFinanceQueryUrl: ts.URL,
 		DialTimeout:          time.Second,
@@ -804,6 +808,7 @@ func TestIexCloudChartResponse(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:            "iex",
 		IexCloudQueryUrl:    ts.URL,
 		IexCloudSecretToken: "SECRET_TOKEN",
 		DialTimeout:         time.Second,
@@ -853,6 +858,7 @@ func TestIexCloudChartBatchResponse(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:            "iex",
 		IexCloudQueryUrl:    ts.URL,
 		IexCloudSecretToken: "SECRET_TOKEN",
 		DialTimeout:         time.Second,
@@ -916,6 +922,7 @@ func TestIexCloudChartNoContent(t *testing.T) {
 
 	context := context.Background()
 	configuration := &config.Configuration{
+		Provider:            "iex",
 		IexCloudQueryUrl:    ts.URL,
 		IexCloudSecretToken: "SECRET_TOKEN",
 		DialTimeout:         time.Second,

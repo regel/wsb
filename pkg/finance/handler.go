@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/regel/tinkerbell/pkg/config"
+	"github.com/regel/tinkerbell/pkg/finance/coingecko"
 	"github.com/regel/tinkerbell/pkg/finance/iex"
 	"github.com/regel/tinkerbell/pkg/finance/types"
 	"github.com/regel/tinkerbell/pkg/finance/yahoo"
@@ -29,17 +30,15 @@ import (
 )
 
 type Handler struct {
-	yahooFinanceUrl      string
-	yahooFinanceQueryUrl string
-	iexCloudQueryUrl     string
-	iexCloudSecretToken  string
-
-	client  *http.Client
-	limiter *rate.Limiter
+	provider types.Provider
+	client   *http.Client
+	limiter  *rate.Limiter
 }
 
 // NewHandler creates a handler
 func NewHandler(config config.Configuration) (*Handler, error) {
+	var limiter *rate.Limiter
+	var provider types.Provider
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 			Timeout: 5 * time.Second,
@@ -49,18 +48,25 @@ func NewHandler(config config.Configuration) (*Handler, error) {
 	var cli = &http.Client{
 		Transport: netTransport,
 	}
-	// Yahoo Finance usage is capped at 2,000 requests/hour
-	limiter := rate.NewLimiter(rate.Every(time.Hour/2000), config.Bursts)
-	if config.IexCloudSecretToken != "" {
+	switch config.Provider {
+	case types.ProviderYahoo:
+		// Yahoo Finance usage is capped at 2,000 requests/hour
+		limiter = rate.NewLimiter(rate.Every(time.Hour/2000), config.Bursts)
+		provider = yahoo.NewProvider(config.YahooFinanceUrl, config.YahooFinanceQueryUrl)
+	case types.ProviderIEX:
 		limiter = rate.NewLimiter(rate.Every(time.Second/100), config.Bursts)
+		provider = iex.NewProvider(config.IexCloudQueryUrl, config.IexCloudSecretToken)
+	case types.ProviderCoingecko:
+		limiter = rate.NewLimiter(rate.Every(time.Minute/50), config.Bursts)
+		provider = coingecko.NewProvider(config.CoingeckoQueryUrl, config.CoingeckoSecretToken)
+	default:
+		panic("Unknown data source provider. Check configuration")
 	}
+
 	h := &Handler{
-		yahooFinanceUrl:      config.YahooFinanceUrl,
-		yahooFinanceQueryUrl: config.YahooFinanceQueryUrl,
-		iexCloudQueryUrl:     config.IexCloudQueryUrl,
-		iexCloudSecretToken:  config.IexCloudSecretToken,
-		client:               cli,
-		limiter:              limiter,
+		provider: provider,
+		client:   cli,
+		limiter:  limiter,
 	}
 	return h, nil
 }
@@ -70,7 +76,7 @@ func (h *Handler) GetHolders(c context.Context, ticker string) (*types.HoldersBr
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	return yahoo.GetHolders(c, h.client, h.yahooFinanceUrl, ticker)
+	return h.provider.GetHolders(c, h.client, ticker)
 }
 
 func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
@@ -80,17 +86,13 @@ func (h *Handler) GetOhlc(c context.Context, ticker string, interval string, fro
 	if err != nil {
 		return nil, err
 	}
-	if h.iexCloudSecretToken != "" {
-		points, err = iex.GetOhlc(c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, ticker, interval, from, to)
-	} else {
-		points, err = yahoo.GetOhlc(c, h.client, h.yahooFinanceQueryUrl, ticker, interval, from, to)
-	}
+	points, err = h.provider.GetOhlc(c, h.client, ticker, interval, from, to)
 	return points, err
 }
 
 func (h *Handler) GetOhlcBatch(c context.Context, wg *sync.WaitGroup, chartChan chan *types.Chart, tickers []string, interval string, from time.Time, to time.Time) {
-	if h.iexCloudSecretToken != "" {
-		iex.GetOhlcBatch(wg, chartChan, c, h.client, h.iexCloudQueryUrl, h.iexCloudSecretToken, tickers, interval, from, to)
+	if h.provider.BatchSupported() {
+		h.provider.GetOhlcBatch(wg, chartChan, c, h.client, tickers, interval, from, to)
 		return
 	}
 	for _, ticker := range tickers {

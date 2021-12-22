@@ -42,10 +42,13 @@ var (
 )
 
 type Configuration struct {
+	Provider             string        `mapstructure:"provider"`
 	YahooFinanceUrl      string        `mapstructure:"yahoo-finance-url"`
 	YahooFinanceQueryUrl string        `mapstructure:"yahoo-finance-query-url"`
 	IexCloudQueryUrl     string        `mapstructure:"iex-cloud-query-url"`
 	IexCloudSecretToken  string        `mapstructure:"iex-cloud-secret-token"`
+	CoingeckoQueryUrl    string        `mapstructure:"coingecko-query-url"`
+	CoingeckoSecretToken string        `mapstructure:"coingecko-secret-token"`
 	DialTimeout          time.Duration `mapstructure:"dial-timeout"`
 	Bursts               int           `mapstructure:"bursts"`
 	Tickers              []string      `mapstructure:"tickers"`

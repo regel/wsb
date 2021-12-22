@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package yahoo
+package coingecko
 
 import (
 	"context"
@@ -22,41 +22,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"sync"
 	"time"
 )
-
-type Response struct {
-	Chart Chart `json:"chart"`
-}
-
-type Chart struct {
-	Result []Result `json:"result"`
-}
-
-type Meta struct {
-	Timezone             string `json:"timezone"`
-	ExchangeTimezoneName string `json:"exchangeTimezoneName"`
-}
-
-type Result struct {
-	Meta       Meta      `json:"meta"`
-	Timestamps []int64   `json:"timestamp"`
-	Indicators Indicator `json:"indicators"`
-}
-
-type Indicator struct {
-	Quote []Quote `json:"quote"`
-}
-
-type Quote struct {
-	Volume []int64   `json:"volume"`
-	Open   []float64 `json:"open"`
-	High   []float64 `json:"high"`
-	Low    []float64 `json:"low"`
-	Close  []float64 `json:"close"`
-}
 
 func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
 	return (t.Equal(from) || t.After(from)) && (t.Equal(to) || t.Before(to))
@@ -65,20 +33,33 @@ func timeWithinRange(t time.Time, from time.Time, to time.Time) bool {
 func getUrl(baseUrl string, ticker string, interval string, from time.Time, to time.Time) string {
 	base, err := url.Parse(baseUrl)
 	if err != nil {
-		panic("Can't parse Yahoo Finance base url")
+		panic("Can't parse Coingecko base url")
 	}
-	if to.Sub(from) < time.Duration(24*time.Hour) {
-		to = from.AddDate(0, 0, 1)
+	now := time.Now()
+	// 1/7/14/30/90/180/365/max
+	time_ago := "1"
+	if now.Sub(from) > time.Duration(365*24*time.Hour) {
+		time_ago = "max"
+	} else if now.Sub(from) > time.Duration(180*24*time.Hour) {
+		time_ago = "365"
+	} else if now.Sub(from) > time.Duration(90*24*time.Hour) {
+		time_ago = "180"
+	} else if now.Sub(from) > time.Duration(30*24*time.Hour) {
+		time_ago = "90"
+	} else if now.Sub(from) > time.Duration(14*24*time.Hour) {
+		time_ago = "30"
+	} else if now.Sub(from) > time.Duration(7*24*time.Hour) {
+		time_ago = "14"
+	} else if now.Sub(from) > time.Duration(1*24*time.Hour) {
+		time_ago = "7"
 	}
+
 	values := url.Values{
-		"interval":   []string{interval},
-		"period1":    []string{strconv.FormatInt(from.Unix(), 10)},
-		"period2":    []string{strconv.FormatInt(to.Unix(), 10)},
-		"region":     []string{"US"},
-		"corsDomain": []string{"com.finance.yahoo"},
+		"days":        []string{time_ago},
+		"vs_currency": []string{"usd"},
 	}
 	relative := &url.URL{
-		Path:     "/v8/finance/chart/" + ticker,
+		Path:     fmt.Sprintf("/api/v3/coins/%s/ohlc", ticker),
 		RawQuery: values.Encode(),
 	}
 
@@ -86,7 +67,7 @@ func getUrl(baseUrl string, ticker string, interval string, from time.Time, to t
 }
 
 func (p Provider) GetOhlc(c context.Context, client *http.Client, ticker string, interval string, from time.Time, to time.Time) ([]types.Ohlc, error) {
-	queryUrl := getUrl(p.YahooFinanceQueryUrl, ticker, interval, from, to)
+	queryUrl := getUrl(p.CoingeckoQueryUrl, ticker, interval, from, to)
 	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -103,28 +84,23 @@ func (p Provider) GetOhlc(c context.Context, client *http.Client, ticker string,
 		return nil, fmt.Errorf("Non-OK HTTP status: %d", res.StatusCode)
 	}
 
-	response := &Response{}
-	err = json.NewDecoder(res.Body).Decode(response)
+	var response [][]float64
+	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
 	points := make([]types.Ohlc, 0)
-	quote := response.Chart.Result[0].Indicators.Quote[0]
-	loc, err := time.LoadLocation(response.Chart.Result[0].Meta.ExchangeTimezoneName)
-	if err != nil {
-		return nil, err
-	}
-	for j, timestamp := range response.Chart.Result[0].Timestamps {
-		t := time.Unix(timestamp, 0).In(loc)
+	for _, point := range response {
+		t := time.Unix(int64(point[0]/1000.0), 0)
 		if timeWithinRange(t, from, to) {
 			ohlc := types.Ohlc{
 				Ticker:    ticker,
 				Timestamp: t,
-				Volume:    quote.Volume[j],
-				Open:      quote.Open[j],
-				High:      quote.High[j],
-				Low:       quote.Low[j],
-				Close:     quote.Close[j],
+				Volume:    0,
+				Open:      point[1],
+				High:      point[2],
+				Low:       point[3],
+				Close:     point[4],
 			}
 			points = append(points, ohlc)
 		}

@@ -36,8 +36,8 @@ func trimInt(s string) (int64, error) {
 	return strconv.ParseInt(s2, 10, 64)
 }
 
-func GetHolders(c context.Context, client *http.Client, baseUrl string, ticker string) (*types.HoldersBreakdown, *types.HoldersTable, *types.HoldersTable, error) {
-	holdersUrl := baseUrl + fmt.Sprintf("/quote/%s/holders", ticker)
+func (p Provider) GetHolders(c context.Context, client *http.Client, ticker string) (*types.HoldersBreakdown, *types.HoldersTable, *types.HoldersTable, error) {
+	holdersUrl := p.YahooFinanceUrl + fmt.Sprintf("/quote/%s/holders", ticker)
 	tables, err := common.ReadHtml(c, client, holdersUrl)
 	if err != io.EOF {
 		return nil, nil, nil, err
