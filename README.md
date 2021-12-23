@@ -18,6 +18,18 @@ Other finance data sources supported in this package:
 - [IEX Cloud](https://iexcloud.io/docs/api/): IEX Cloud is a platform that makes financial data and services accessible to everyone. There is a free tier for use during initial API exploration and application development. During registration you will receive security tokens required to access this API
 - [CoinGecko](https://www.coingecko.com/): CoinGecko provides a comprehensive cryptocurrency API. See Crypto Data API Plans on their web site for more information. At the time of this writting, the free plan is limited at 50 calls/minute (varies)
 
+## Backers :dart: :heart_eyes:
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/gh-regel#backer)]
+
+<a href="https://opencollective.com/gh-regel#backers" target="_blank"><img src="https://opencollective.com/gh-regel/backers.svg?width=890"></a>
+
+## Sponsors :whale:
+
+Support this project by becoming a sponsor. Your logo will show up here with a
+link to your website. [[Become a
+sponsor](https://opencollective.com/gh-regel#sponsor)]
+
 ## Installation
 
 ### Binary Distribution
