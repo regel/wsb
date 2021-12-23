@@ -36,14 +36,14 @@ ADD . .
 RUN go mod download
 RUN GO111MODULE=on CGO_ENABLED=$CGO_ENABLED go build -a \
   -ldflags "${LDFLAGS}" \
-  -o tb .
+  -o bin .
 
 #--- Build runtime container ---#
 FROM ${RUN_CONTAINER}
 WORKDIR /
 # Copy certs, app, and user
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app/tb .
+COPY --from=builder /app/bin /tb
 
 USER 65532:65532
 
