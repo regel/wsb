@@ -452,6 +452,10 @@ const sampleCoingeckoChartResponse = `
 ]
 `
 
+const sampleCoingeckoChartErrorResponse = `
+{"status":500,"error":"Internal Server Error"}
+`
+
 func strftime(s string) time.Time {
 	tm, _ := time.Parse("2006-01-02", s)
 	return tm
@@ -1000,4 +1004,38 @@ func TestCoinGeckoChartResponse(t *testing.T) {
 	require.InDelta(t, expected.High, out[0].High, 0.01, "High must be the same")
 	require.InDelta(t, expected.Low, out[0].Low, 0.01, "Low must be the same")
 	require.InDelta(t, expected.Close, out[0].Close, 0.01, "Close must be the same")
+}
+
+func TestCoinGeckoChartErrorResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rsp string
+		if r.URL.Path == "/api/v3/coins/xxx/ohlc" {
+			rsp = sampleCoingeckoChartErrorResponse
+			w.Header()["Content-Type"] = []string{"application/json"}
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			panic("Cannot handle request")
+		}
+
+		fmt.Fprintln(w, rsp)
+	}))
+	defer ts.Close()
+
+	context := context.Background()
+	configuration := &config.Configuration{
+		Provider:          "coingecko",
+		CoingeckoQueryUrl: ts.URL,
+		DialTimeout:       time.Second,
+		Bursts:            1,
+		Tickers:           []string{"xxx"},
+		Debug:             false,
+	}
+	n, err := NewHandler(*configuration)
+	require.NoError(t, err)
+
+	tm, _ := time.Parse("2006-01-02", "2021-03-04")
+
+	out, err := n.GetOhlc(context, "xxx", "1d", tm, tm)
+	require.Error(t, err)
+	require.Nil(t, out)
 }
