@@ -49,3 +49,14 @@ USER 65532:65532
 
 # Run entrypoint
 ENTRYPOINT ["/tb"]
+
+LABEL org.opencontainers.image.description="\
+tb (tinkerbell) is the the tool for downloading Yahoo! finance market data.\
+\
+This package aims to provide a reliable, threaded, and idiomatic way to download historical market data from Yahoo! Finance API and other finance data sources.\
+\
+Although the Yahoo Finance API has officially been closed down, it does still work and it provides a free access to a vast number of stocks.\
+\
+Other finance data sources supported in this package: IEX Cloud, CoinGecko.\
+"
+

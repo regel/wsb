@@ -40,8 +40,8 @@ Unpack the `tb` binary, add it to your PATH, and you are good to go!
 
 ### Docker Image
 
-A Docker image is available at `https://hub.docker.com/r/regel/tinkerbell` with list of
-available tags [here](https://hub.docker.com/r/regel/tinkerbell/tags).
+A Docker image is available at `https://github.com/regel/tinkerbell/pkgs/container/tb` with list of
+available tags [here](https://github.com/regel/tinkerbell/pkgs/container/tb/versions).
 
 ### Homebrew
 
