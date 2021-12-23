@@ -170,6 +170,7 @@ func (p Provider) GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, 
 			req = req.WithContext(ctx)
 			res, err := client.Do(req)
 			if err != nil {
+				wg.Done()
 				return
 			}
 			defer res.Body.Close()
@@ -180,6 +181,7 @@ func (p Provider) GetOhlcBatch(wg *sync.WaitGroup, chartChan chan *types.Chart, 
 			response := map[string]Response{}
 			err = json.NewDecoder(res.Body).Decode(&response)
 			if err != nil {
+				wg.Done()
 				return
 			}
 			for ticker := range response {
