@@ -19,7 +19,7 @@
 FROM goboring/golang:1.15.6b5
 
 ARG GITHUB_TOKEN
-ARG VERSION
+ARG TAG
 
 WORKDIR /app
 ADD . .
@@ -28,5 +28,5 @@ RUN go mod download
 
 RUN curl -sfL https://goreleaser.com/static/run | \
   VERSION=v1.15.2 DISTRIBUTION=oss \
-  GITHUB_TOKEN=$GITHUB_TOKEN GORELEASER_CURRENT_TAG=$VERSION \
+  GITHUB_TOKEN=$GITHUB_TOKEN GORELEASER_CURRENT_TAG=$TAG \
   bash -s -- release --clean --skip-validate
