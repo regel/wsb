@@ -19,7 +19,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: 'regel/tb'
+  IMAGE_NAME: 'regel/wsb'
 
 jobs:
   default:

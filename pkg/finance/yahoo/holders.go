@@ -17,8 +17,8 @@ package yahoo
 import (
 	"context"
 	"fmt"
-	"github.com/regel/tinkerbell/pkg/common"
-	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/wsb/pkg/common"
+	"github.com/regel/wsb/pkg/finance/types"
 	"io"
 	"net/http"
 	"strconv"

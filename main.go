@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/regel/tinkerbell/tb/cmd"
+	"github.com/regel/wsb/cmd"
 )
 
 func main() {

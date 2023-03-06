@@ -3,8 +3,8 @@ package finance
 import (
 	"context"
 	"fmt"
-	"github.com/regel/tinkerbell/pkg/config"
-	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/wsb/pkg/config"
+	"github.com/regel/wsb/pkg/finance/types"
 	"net/http"
 	"net/http/httptest"
 	"sync"

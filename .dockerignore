@@ -1,6 +1,6 @@
 *
 !finance/**/*
-!tb/**/*
+!cmd/**/*
 !pkg/**/*
 !*.go
 !go.mod

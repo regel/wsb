@@ -18,8 +18,7 @@ dist/
 temp/
 
 # Misc
-tb
-tinkerbell
+wsb
 /config.yaml
 /configmap.yaml
 __pycache__

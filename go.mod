@@ -1,16 +1,16 @@
-module github.com/regel/tinkerbell
+module github.com/regel/wsb
 
 go 1.15
 
-replace github.com/regel/tinkerbell/pkg/finance/types => ./pkg/finance/types
+replace github.com/regel/wsb/pkg/finance/types => ./pkg/finance/types
 
-replace github.com/regel/tinkerbell/pkg/finance/yahoo => ./pkg/finance/yahoo
+replace github.com/regel/wsb/pkg/finance/yahoo => ./pkg/finance/yahoo
 
-replace github.com/regel/tinkerbell/pkg/common => ./pkg/common
+replace github.com/regel/wsb/pkg/common => ./pkg/common
 
-replace github.com/regel/tinkerbell/pkg/finance => ./pkg/finance
+replace github.com/regel/wsb/pkg/finance => ./pkg/finance
 
-replace github.com/regel/tinkerbell/pkg/config => ./pkg/config
+replace github.com/regel/wsb/pkg/config => ./pkg/config
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0

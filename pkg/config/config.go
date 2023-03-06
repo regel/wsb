@@ -35,9 +35,9 @@ var (
 	homeDir, _            = homedir.Dir()
 	configSearchLocations = []string{
 		".",
-		filepath.Join(homeDir, ".tb"),
-		"/usr/local/etc/tb",
-		"/etc/tb",
+		filepath.Join(homeDir, ".wsb"),
+		"/usr/local/etc/wsb",
+		"/etc/wsb",
 	}
 )
 
@@ -78,13 +78,13 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 
 	v.AutomaticEnv()
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-	v.SetEnvPrefix("TB")
+	v.SetEnvPrefix("WSB")
 
 	if cfgFile != "" {
 		v.SetConfigFile(cfgFile)
 	} else {
-		v.SetConfigName("tb")
-		if cfgFile, ok := os.LookupEnv("TB_CONFIG_DIR"); ok {
+		v.SetConfigName("wsb")
+		if cfgFile, ok := os.LookupEnv("WSB_CONFIG_DIR"); ok {
 			v.AddConfigPath(cfgFile)
 		} else {
 			for _, searchLocation := range configSearchLocations {

@@ -32,14 +32,14 @@ pkgdir ?= build/dist
 .PHONY: all
 all:
 	@$(MAKE) deps
-	@$(MAKE) tb
+	@$(MAKE) wsb
 
 .PHONY: help
 help:
 	@echo 'Targets:'
-	@echo '  all        - download dependencies and compile tb binary'
+	@echo '  all        - download dependencies and compile wsb binary'
 	@echo '  deps       - download dependencies'
-	@echo '  tb         - compile tb binary'
+	@echo '  wsb        - compile wsb binary'
 	@echo '  test       - run short unit tests'
 	@echo '  fmt        - format source files'
 	@echo '  tidy       - tidy go modules'
@@ -52,9 +52,9 @@ help:
 deps:
 	go mod download -x
 
-.PHONY: tb
-tb:
-	go build -ldflags "$(LDFLAGS)" -o ./tb/cmd/tb .
+.PHONY: wsb
+wsb:
+	go build -ldflags "$(LDFLAGS)" -o ./wsb/cmd/wsb .
 
 .PHONY: test
 test:
@@ -115,7 +115,7 @@ test-all: fmtcheck vet
 
 .PHONY: clean
 clean:
-	rm -f tb
-	rm -f tb.exe
+	rm -f wsb
+	rm -f wsb.exe
 	rm -rf build
 

@@ -38,7 +38,7 @@ var (
 
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tb",
+		Use:   "wsb",
 		Short: "The Go client to get stock market and cryptocurrencies market data",
 		Long: heredoc.Doc(`
 			Get finance data

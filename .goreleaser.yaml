@@ -13,7 +13,7 @@
 builds:
   - id: default
     main: main.go
-    binary: tb
+    binary: wsb
     goos:
       - linux
       - windows
@@ -24,7 +24,7 @@ builds:
       - CGO_ENABLED=0
   - id: goboring
     main: main.go
-    binary: tb
+    binary: wsb
     goos:
       - linux
     goarch:

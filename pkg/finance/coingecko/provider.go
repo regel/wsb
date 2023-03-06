@@ -1,7 +1,7 @@
 package coingecko
 
 import (
-	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/wsb/pkg/finance/types"
 )
 
 // Local type implements the types.Provider interface

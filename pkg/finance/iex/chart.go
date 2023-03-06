@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/wsb/pkg/finance/types"
 	"log"
 	"math"
 	"net/http"

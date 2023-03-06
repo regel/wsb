@@ -17,7 +17,7 @@ package coingecko
 import (
 	"context"
 	"errors"
-	"github.com/regel/tinkerbell/pkg/finance/types"
+	"github.com/regel/wsb/pkg/finance/types"
 	"net/http"
 )
 

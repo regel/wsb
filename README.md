@@ -1,11 +1,11 @@
 # Finance Market Data Downloader
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Go Report Card](https://goreportcard.com/badge/github.com/regel/tinkerbell)](https://goreportcard.com/report/github.com/regel/tinkerbell)
-[![Build](https://github.com/regel/tinkerbell/actions/workflows/build.yaml/badge.svg)](https://github.com/regel/tinkerbell/actions/workflows/build.yaml)
-[![codecov](https://codecov.io/github/regel/tinkerbell/coverage.svg)](https://codecov.io/gh/regel/tinkerbell)
+[![Go Report Card](https://goreportcard.com/badge/github.com/regel/wsb)](https://goreportcard.com/report/github.com/regel/wsb)
+[![Build](https://github.com/regel/wsb/actions/workflows/build.yaml/badge.svg)](https://github.com/regel/wsb/actions/workflows/build.yaml)
+[![codecov](https://codecov.io/github/regel/wsb/coverage.svg)](https://codecov.io/gh/regel/wsb)
 
-`tb` (tinkerbell) is the the tool for downloading Yahoo! finance market data.
+`wsb` is the the tool for downloading Yahoo! finance market data.
 
 This go package aims to provide a reliable, threaded, and idiomatic way to download historical market data from Yahoo! Finance API and other finance data sources.
 
@@ -34,37 +34,37 @@ sponsor](https://opencollective.com/gh-regel#sponsor)]
 
 ### Binary Distribution
 
-Download the release distribution for your OS from the [Releases](https://github.com/regel/tinkerbell/releases) page.
+Download the release distribution for your OS from the [Releases](https://github.com/regel/wsb/releases) page.
 
-Unpack the `tb` binary, add it to your PATH, and you are good to go!
+Unpack the `wsb` binary, add it to your PATH, and you are good to go!
 
 ### Docker Image
 
-A Docker image is available at `https://github.com/regel/tinkerbell/pkgs/container/tb` with list of
-available tags [here](https://github.com/regel/tinkerbell/pkgs/container/tb/versions).
+A Docker image is available at `https://github.com/regel/wsb/pkgs/container/wsb` with list of
+available tags [here](https://github.com/regel/wsb/pkgs/container/wsb/versions).
 
 ### Homebrew
 
 ```console
-$ brew tap regel/tinkerbell
-$ brew install tinkerbell
+$ brew tap regel/wsb
+$ brew install wsb
 ```
 
 ## Usage
 
 See documentation for individual commands:
 
-* [tb](doc/tb.md)
-* [tb version](doc/tb_version.md)
-* [tb chart](doc/tb_chart.md)
-* [tb hold](doc/tb_hold.md)
+* [wsb](doc/wsb.md)
+* [wsb version](doc/wsb_version.md)
+* [wsb chart](doc/wsb_chart.md)
+* [wsb hold](doc/wsb_hold.md)
 
 ## Configuration
 
-`tb` is a command-line application.
+`wsb` is a command-line application.
 
 All command-line flags can also be set via environment variables or config file.
-Environment variables must be prefixed with `TB_`.
+Environment variables must be prefixed with `WSB_`.
 Underscores must be used instead of hyphens.
 
 CLI flags, environment variables, and a config file can be mixed.
@@ -79,7 +79,7 @@ The following order of precedence applies:
 Pulling historic price data for Bitcoin and [Cardano](https://cardano.org/) cryptocurrencies:
 
 ```
-tb chart --provider coingecko --tickers bitcoin,cardano --from 2021-02-01 --to 2021-04-01
+wsb chart --provider coingecko --tickers bitcoin,cardano --from 2021-02-01 --to 2021-04-01
 ```
 
 Output:
@@ -131,13 +131,13 @@ The following example show various way of configuring the same thing:
 
 #### CLI
 
-    tb chart --tickers AAPL,GME --from "2021-01-01"
+    wsb chart --tickers AAPL,GME --from "2021-01-01"
 
 #### Environment Variables
 
-    export TB_TICKERS=AAPL,GME
+    export WSB_TICKERS=AAPL,GME
 
-    tb chart --from "2021-01-01"
+    wsb chart --from "2021-01-01"
 
 #### Config File
 
@@ -151,16 +151,16 @@ tickers:
 
 #### Config Usage
 
-    tb chart --config config.yaml --from "2021-01-01"
+    wsb chart --config config.yaml --from "2021-01-01"
 
 
-`tb` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
+`wsb` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
 
-Notice that if no config file is specified, then `tb.yaml` (or any of the supported formats) is loaded from the current directory, `$HOME/.tb`, or `/etc/tb`, in that order, if found.
+Notice that if no config file is specified, then `wsb.yaml` (or any of the supported formats) is loaded from the current directory, `$HOME/.wsb`, or `/etc/wsb`, in that order, if found.
 
 ## Building from Source
 
-`tb` is built using Go 1.13 or higher.
+`wsb` is built using Go 1.13 or higher.
 
 It uses [Goreleaser](https://goreleaser.com/) under the covers.
 

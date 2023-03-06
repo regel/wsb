@@ -43,15 +43,15 @@ FROM ${RUN_CONTAINER}
 WORKDIR /
 # Copy certs, app, and user
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app/bin /tb
+COPY --from=builder /app/bin /wsb
 
 USER 65532:65532
 
 # Run entrypoint
-ENTRYPOINT ["/tb"]
+ENTRYPOINT ["/wsb"]
 
 LABEL org.opencontainers.image.description="\
-tb (tinkerbell) is the the tool for downloading Yahoo! finance market data.\
+wsb is the the tool for downloading Yahoo! finance market data.\
 \
 This package aims to provide a reliable, threaded, and idiomatic way to download historical market data from Yahoo! Finance API and other finance data sources.\
 \
