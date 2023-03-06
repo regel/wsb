@@ -5,6 +5,14 @@
 [![Build](https://github.com/regel/wsb/actions/workflows/build.yaml/badge.svg)](https://github.com/regel/wsb/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/github/regel/wsb/coverage.svg)](https://codecov.io/gh/regel/wsb)
 
+<img
+ src="./static/wsb.png"
+ raw=true
+ alt="Go client for downloading finance market data"
+ width="150" align="right"
+/>
+
+
 `wsb` is the the tool for downloading Yahoo! finance market data.
 
 This go package aims to provide a reliable, threaded, and idiomatic way to download historical market data from Yahoo! Finance API and other finance data sources.
