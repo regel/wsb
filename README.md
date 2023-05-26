@@ -175,7 +175,7 @@ It uses [Goreleaser](https://goreleaser.com/) under the covers.
 To build:
 
 ```
-goreleaser build --rm-dist --snapshot
+goreleaser build --clean --snapshot
 ```
 
 ### Known issues
