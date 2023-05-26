@@ -54,7 +54,7 @@ available tags [here](https://github.com/regel/wsb/pkgs/container/wsb/versions).
 ### Homebrew
 
 ```console
-$ brew tap regel/wsb
+$ brew tap regel/tap
 $ brew install wsb
 ```
 
