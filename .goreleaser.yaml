@@ -20,6 +20,7 @@ builds:
       - darwin
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=0
   - id: goboring
@@ -35,9 +36,6 @@ builds:
 archives:
   - id: default
     format: tar.gz
-    replacements:
-      darwin: macOS
-      amd64: 64-bit
     files:
       - LICENSE
       - README.md
@@ -52,10 +50,6 @@ archives:
       - README.md
     builds:
       - goboring
-
-release:
-  draft: true
-  prerelease: true
 
 
 # Check https://goreleaser.com/customization/homebrew/
