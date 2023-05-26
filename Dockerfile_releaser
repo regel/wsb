@@ -18,6 +18,7 @@
 
 FROM goboring/golang:1.15.6b5
 
+ARG HOMEBREW_TAP_GITHUB_TOKEN
 ARG GITHUB_TOKEN
 ARG TAG
 
@@ -27,6 +28,7 @@ ADD . .
 RUN go mod download
 
 RUN curl -sfL https://goreleaser.com/static/run | \
-  VERSION=v1.15.2 DISTRIBUTION=oss \
+  VERSION=v1.18.2 DISTRIBUTION=oss \
   GITHUB_TOKEN=$GITHUB_TOKEN GORELEASER_CURRENT_TAG=$TAG \
+  HOMEBREW_TAP_GITHUB_TOKEN=$HOMEBREW_TAP_GITHUB_TOKEN \
   bash -s -- release --clean --skip-validate

@@ -56,3 +56,15 @@ archives:
 release:
   draft: true
   prerelease: true
+
+
+# Check https://goreleaser.com/customization/homebrew/
+brews:
+  - homepage: 'https://github.com/regel/homebrew-tap'
+    description: 'wsb binary distribution using homebrew.'
+    folder: Formula
+    tap:
+      owner: regel
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+
