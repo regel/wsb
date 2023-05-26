@@ -21,6 +21,11 @@ builds:
     goarch:
       - amd64
       - arm64
+    # List of combinations of GOOS + GOARCH + GOARM to ignore.
+    # unsupported GOOS/GOARCH pair windows/arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
     env:
       - CGO_ENABLED=0
   - id: goboring
