@@ -28,15 +28,15 @@ builds:
         goarch: arm64
     env:
       - CGO_ENABLED=0
-  - id: goboring
-    main: main.go
-    binary: wsb
-    goos:
-      - linux
-    goarch:
-      - amd64
-    env:
-      - CGO_ENABLED=1
+#  - id: goboring
+#    main: main.go
+#    binary: wsb
+#    goos:
+#      - linux
+#    goarch:
+#      - amd64
+#    env:
+#      - CGO_ENABLED=1
 
 archives:
   - id: default
@@ -46,15 +46,15 @@ archives:
       - README.md
     builds:
       - default
-  - id: goboring
-    format: tar.gz
-    replacements:
-      amd64: 64-bit_goboring
-    files:
-      - LICENSE
-      - README.md
-    builds:
-      - goboring
+#  - id: goboring
+#    format: tar.gz
+#    replacements:
+#      amd64: 64-bit_goboring
+#    files:
+#      - LICENSE
+#      - README.md
+#    builds:
+#      - goboring
 
 
 # Check https://goreleaser.com/customization/homebrew/
