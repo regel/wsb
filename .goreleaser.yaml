@@ -63,6 +63,11 @@ brews:
   - homepage: 'https://github.com/regel/homebrew-tap'
     description: 'wsb binary distribution using homebrew.'
     folder: Formula
+    # IDs of the archives to use.
+    # exclude goboring. One tap can handle only one archive of an OS/Arch combination
+    ids:
+    - default
+
     tap:
       owner: regel
       name: homebrew-tap
